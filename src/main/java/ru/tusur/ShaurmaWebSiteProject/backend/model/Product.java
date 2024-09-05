@@ -1,23 +1,75 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.model;
 
 
+import com.vaadin.hilla.Nullable;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.atmosphere.config.service.Get;
 
-@Data
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "product")
+@Getter
+@ToString
+@Setter
+@Table
 public class Product {
-    @EqualsAndHashCode.Include
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
-    Long id;
+    private Long id;
 
-    String name;
+    private String name;
+
+    private String previewUrl;
+
+    private BigDecimal price;
+
+    private Integer mass;
+
+    private Integer discount;
+
+    @Column(columnDefinition="BOOLEAN DEFAULT true")
+    private boolean active = true;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    private Integer rank;
+
+    @ManyToOne
+    @JoinColumn(name="type_id", nullable=false)
+    private ProductTypeEntity productType;
+
+//    @ElementCollection(fetch = FetchType.EAGER)
+//    @JoinTable(name="content_map", joinColumns=@JoinColumn(name="ID"))
+//    @MapKeyColumn (name="content_name")
+//    @Column(name="content_mass")
+//    private Map<String, Float> contentMap = new HashMap<>();
+
+    public boolean equalsAllParams(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+        return active == product.active && id.equals(product.id) && Objects.equals(name, product.name) && Objects.equals(previewUrl, product.previewUrl) && Objects.equals(price, product.price) && Objects.equals(mass, product.mass) && Objects.equals(discount, product.discount) && Objects.equals(description, product.description) && Objects.equals(rank, product.rank) && productType == product.productType;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+        return id.equals(product.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
 }

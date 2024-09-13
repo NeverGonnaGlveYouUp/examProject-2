@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Setter
 @Getter
@@ -31,13 +32,10 @@ public class UserDetails implements org.springframework.security.core.userdetail
 
     private String avatarUrl;
 
-    @Transient
-    private AvatarImage avatarImage;
-
     @Email
     private String email;
 
-    private String roles;
+    private String role;
 
     @NotNull
     @Length(min = 8, max = 64)
@@ -47,10 +45,12 @@ public class UserDetails implements org.springframework.security.core.userdetail
     @NotNull
     private String password;
 
+    @OneToMany(mappedBy="userDetails")
+    private Set<Review> reviews;
 
 
-    @Column(columnDefinition="BOOLEAN DEFAULT true")
-    private boolean allowsMarketing = true;
+    @OneToMany(mappedBy="userDetails")
+    private Set<Order> orders;
 
     @Override
     public int hashCode() {
@@ -78,7 +78,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(roles));
+        return List.of(new SimpleGrantedAuthority(role));
     }
 
     @Override

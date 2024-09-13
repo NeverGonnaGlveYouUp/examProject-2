@@ -45,27 +45,38 @@ public class MainPageProductRepresentation extends Component implements HasCompo
 
     @Getter
     private Product product;
-    private final VerticalLayout verticalLayout;
-    private final HorizontalLayout priceGroup;
-    private final Div priceGroupWrapper;
-    private final Div imageComponent;
-    private final Div priceComponent;
-    private final Div massComponent;
-    private final Div discountComponent;
-    private final Div nameComponent;
-    private final Div descriptionComponent;
-    private final Div submitButtonComponent;
+    private VerticalLayout verticalLayout;
+    private HorizontalLayout priceGroup;
+    private Div priceGroupWrapper;
+    private Div imageComponent;
+    private Div priceComponent;
+    private Div massComponent;
+//    private final Div discountComponent;
+    private Div nameComponent;
+    private Div descriptionComponent;
+    private Div submitButtonComponent;
 
     ProductRepo productRepo;
 
     public MainPageProductRepresentation(ProductRepo productRepo) {
         this.productRepo = productRepo;
+        initComponent();
+        this.add(verticalLayout);
+    }
+
+    public MainPageProductRepresentation(Product product){
+        this.product = product;
+        initComponent();
+        this.add(verticalLayout);
+    }
+
+    private void initComponent(){
         verticalLayout = new VerticalLayout();
         imageComponent = new Div();
         priceGroup = new HorizontalLayout();
         priceGroupWrapper = new Div();
         priceComponent = new Div();
-        discountComponent = new Div();
+//        discountComponent = new Div();
         massComponent = new Div();
         nameComponent = new Div();
         descriptionComponent = new Div();
@@ -79,7 +90,8 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         imageComponent.getStyle().setMarginBottom("8px");
 
         priceGroup.addClassName("boldSpan");
-        priceGroup.addAndExpand(priceComponent, discountComponent);
+//        priceGroup.addAndExpand(priceComponent, discountComponent);
+        priceGroup.addAndExpand(priceComponent);
 
         priceGroupWrapper.setMaxHeight("24px");
         priceGroupWrapper.setSizeFull();
@@ -108,7 +120,6 @@ public class MainPageProductRepresentation extends Component implements HasCompo
                 .setJustifyContent(Style.JustifyContent.NORMAL)
                 .setPosition(Style.Position.RELATIVE);
 
-        this.add(verticalLayout);
     }
 
     public void populateComponents(@NotNull Product product) {
@@ -134,14 +145,14 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             priceComponent.add(new Span(product.getPrice().setScale(2, RoundingMode.UP).toString() + " ₽"));
         }
 
-        discountComponent.removeAll();
-
-        if (Optional.ofNullable(product.getDiscount()).isPresent()) {
-            discountComponent.removeAll();
-            Span span = new Span("-" + product.getDiscount() + "%");
-            span.getElement().getThemeList().add("badge small");
-            discountComponent.add(span);
-        }
+//        discountComponent.removeAll();
+//
+//        if (Optional.ofNullable(product.getDiscount()).isPresent()) {
+//            discountComponent.removeAll();
+//            Span span = new Span("-" + product.getDiscount() + "%");
+//            span.getElement().getThemeList().add("badge small");
+//            discountComponent.add(span);
+//        }
 
         Span plaseholderSpan = new Span("Название");
         plaseholderSpan.getElement().getThemeList().add("badge small primary");
@@ -221,11 +232,12 @@ public class MainPageProductRepresentation extends Component implements HasCompo
                 Dialog dialog = attachSetupPriceDialog();
                 addItem("Задать цену/скидку", menuItemClickEvent -> dialog.open());
                 addItem("Очистить", menuItemClickEvent -> {
-                    product.setDiscount(null);
+//                    product.setDiscount(null);
                     product.setPrice(null);
                     priceComponent.removeAll();
-                    discountComponent.removeAll();
-                    plaseholderSpan.setText("Цена/скидка");
+//                    discountComponent.removeAll();
+//                    plaseholderSpan.setText("Цена/скидка");
+                    plaseholderSpan.setText("Цена");
                     priceComponent.add(plaseholderSpan);
                 });
             }
@@ -395,34 +407,34 @@ public class MainPageProductRepresentation extends Component implements HasCompo
                 }
             });
 
-            IntegerField discountField = new IntegerField();
-            discountField.setLabel("Скидка");
-            discountField.setSuffixComponent(new Span("%"));
-            discountField.setPrefixComponent(new Span("-"));
-            discountField.setHelperText("*Заполните поле, если требуется разместить скидку, в противном случае оставьте пустым.");
-            discountField.setMin(0);
-            discountField.setMax(100);
-            discountField.addValueChangeListener(integerFieldIntegerComponentValueChangeEvent -> {
-                if(Optional.ofNullable(product.getDiscount()).isPresent() && discountField.getValue() == null) discountField.setValue(product.getDiscount());
-                Integer discount = discountField.getValue();
-                if(discount != null){
-                    if(discount.compareTo(discountField.getMin()) == 0){
-                        discountField.setErrorMessage("Скидка не может быть равна нулю.");
-                        discountField.setInvalid(true);
-                    } else if (discount.compareTo(discountField.getMin()) < 0) {
-                        discountField.setErrorMessage("Скидка не может быть меньще нуля.");
-                        discountField.setInvalid(true);
-                    } else if (discount.compareTo(discountField.getMax()) == 0) {
-                        discountField.setErrorMessage("Скидка не может быть равна ста процентам.");
-                        discountField.setInvalid(true);
-                    } else if (discount.compareTo(discountField.getMax()) > 0) {
-                        discountField.setErrorMessage("Скидка не может быть больще ста процентов.");
-                        discountField.setInvalid(true);
-                    } else {
-                        discountField.setInvalid(false);
-                    }
-                }
-            });
+//            IntegerField discountField = new IntegerField();
+//            discountField.setLabel("Скидка");
+//            discountField.setSuffixComponent(new Span("%"));
+//            discountField.setPrefixComponent(new Span("-"));
+//            discountField.setHelperText("*Заполните поле, если требуется разместить скидку, в противном случае оставьте пустым.");
+//            discountField.setMin(0);
+//            discountField.setMax(100);
+//            discountField.addValueChangeListener(integerFieldIntegerComponentValueChangeEvent -> {
+//                if(Optional.ofNullable(product.getDiscount()).isPresent() && discountField.getValue() == null) discountField.setValue(product.getDiscount());
+//                Integer discount = discountField.getValue();
+//                if(discount != null){
+//                    if(discount.compareTo(discountField.getMin()) == 0){
+//                        discountField.setErrorMessage("Скидка не может быть равна нулю.");
+//                        discountField.setInvalid(true);
+//                    } else if (discount.compareTo(discountField.getMin()) < 0) {
+//                        discountField.setErrorMessage("Скидка не может быть меньще нуля.");
+//                        discountField.setInvalid(true);
+//                    } else if (discount.compareTo(discountField.getMax()) == 0) {
+//                        discountField.setErrorMessage("Скидка не может быть равна ста процентам.");
+//                        discountField.setInvalid(true);
+//                    } else if (discount.compareTo(discountField.getMax()) > 0) {
+//                        discountField.setErrorMessage("Скидка не может быть больще ста процентов.");
+//                        discountField.setInvalid(true);
+//                    } else {
+//                        discountField.setInvalid(false);
+//                    }
+//                }
+//            });
 
             Button submit = new Button("Сохранить");
             submit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -446,40 +458,40 @@ public class MainPageProductRepresentation extends Component implements HasCompo
                     return;
                 }
 
-                Integer discount = discountField.getValue();
-                if(discount != null){
-                    if(discount.compareTo(discountField.getMin()) == 0){
-                        discountField.setErrorMessage("Скидка не может быть равна нулю.");
-                        discountField.setInvalid(true);
-                        return;
-                    } else if (discount.compareTo(discountField.getMin()) < 0) {
-                        discountField.setErrorMessage("Скидка не может быть меньще нуля.");
-                        discountField.setInvalid(true);
-                        return;
-                    } else if (discount.compareTo(discountField.getMax()) == 0) {
-                        discountField.setErrorMessage("Скидка не может быть равна ста процентам.");
-                        discountField.setInvalid(true);
-                        return;
-                    } else if (discount.compareTo(discountField.getMax()) > 0) {
-                        discountField.setErrorMessage("Скидка не может быть больще ста процентов.");
-                        discountField.setInvalid(true);
-                        return;
-                    } else {
-                        discountField.setInvalid(false);
-                    }
-                }
+//                Integer discount = discountField.getValue();
+//                if(discount != null){
+//                    if(discount.compareTo(discountField.getMin()) == 0){
+//                        discountField.setErrorMessage("Скидка не может быть равна нулю.");
+//                        discountField.setInvalid(true);
+//                        return;
+//                    } else if (discount.compareTo(discountField.getMin()) < 0) {
+//                        discountField.setErrorMessage("Скидка не может быть меньще нуля.");
+//                        discountField.setInvalid(true);
+//                        return;
+//                    } else if (discount.compareTo(discountField.getMax()) == 0) {
+//                        discountField.setErrorMessage("Скидка не может быть равна ста процентам.");
+//                        discountField.setInvalid(true);
+//                        return;
+//                    } else if (discount.compareTo(discountField.getMax()) > 0) {
+//                        discountField.setErrorMessage("Скидка не может быть больще ста процентов.");
+//                        discountField.setInvalid(true);
+//                        return;
+//                    } else {
+//                        discountField.setInvalid(false);
+//                    }
+//                }
 
                 product.setPrice(priceField.getValue());
-                product.setDiscount(discountField.getValue());
+//                product.setDiscount(discountField.getValue());
 
                 priceComponent.removeAll();
                 priceComponent.add(new Span(priceField.getValue().setScale(2, RoundingMode.UP).toString() + " ₽"));
-                if (discountField.getOptionalValue().isPresent()) {
-                    Span span = new Span("-" + discountField.getValue().toString() + "%");
-                    span.getElement().getThemeList().add("badge small");
-                    discountComponent.removeAll();
-                    discountComponent.add(span);
-                }
+//                if (discountField.getOptionalValue().isPresent()) {
+//                    Span span = new Span("-" + discountField.getValue().toString() + "%");
+//                    span.getElement().getThemeList().add("badge small");
+//                    discountComponent.removeAll();
+//                    discountComponent.add(span);
+//                }
 
                 dialog.close();
             });
@@ -488,7 +500,8 @@ public class MainPageProductRepresentation extends Component implements HasCompo
                     (e) -> dialog.close());
 
             FormLayout formLayout = new FormLayout();
-            formLayout.add(priceField, discountField);
+//            formLayout.add(priceField, discountField);
+            formLayout.add(priceField);
 
             dialog.setHeaderTitle("Установка цены/скидки");
             dialog.getHeader().add(cancel);
@@ -538,7 +551,6 @@ public class MainPageProductRepresentation extends Component implements HasCompo
 
     @Tag("my-big-decimal-field")
     @JsModule("./my-big-decimal-field.js")
-    static class MyBigDecimalField extends BigDecimalField {
-    }
+    static class MyBigDecimalField extends BigDecimalField { }
 
 }

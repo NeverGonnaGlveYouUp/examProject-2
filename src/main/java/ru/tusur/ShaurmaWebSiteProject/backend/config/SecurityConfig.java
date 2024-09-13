@@ -1,16 +1,11 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.config;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductType;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.DelegatingPasswordEncoder;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.CustomUserDetailsService;
@@ -21,9 +16,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.Set;
-
 
 @EnableWebSecurity
 @Configuration
@@ -36,7 +30,25 @@ class SecurityConfig extends VaadinWebSecurity {
     ProductRepo productRepo;
 
     @Autowired
+    OrderContentRepo orderContentRepo;
+
+    @Autowired
+    OrderRepo orderRepo;
+
+    @Autowired
     ProductTypeEntityRepo productTypeEntityRepo;
+
+    @Autowired
+    PaymentRepo paymentRepo;
+
+    @Autowired
+    ProductOptionRepo productOptionRepo;
+
+    @Autowired
+    BranchProductRepo branchProductRepo;
+
+    @Autowired
+    BranchRepo branchRepo;
 
     @Autowired
     DelegatingPasswordEncoder delegatingPasswordEncoder;
@@ -52,8 +64,8 @@ class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth ->
-                auth
-                        .requestMatchers(antMatchers("/")).permitAll()
+                        auth
+                                .requestMatchers(antMatchers("/")).permitAll()
 //                        .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/themes/*")).permitAll()
         );
 
@@ -64,7 +76,7 @@ class SecurityConfig extends VaadinWebSecurity {
 
 
         UserDetails userDetails = new UserDetails();
-        userDetails.setRoles(Roles.ADMIN);
+        userDetails.setRole(Roles.ADMIN);
         userDetails.setEmail("admin@admin.admin");
         userDetails.setTransientPassword("admin@admin.admin");
         userDetails.setUsername("admin@admin.admin");
@@ -158,7 +170,154 @@ class SecurityConfig extends VaadinWebSecurity {
 //        }});
         productRepo.save(product6);
 
+        ProductOption productOption = new ProductOption();
+        productOption.setPrise(new BigDecimal("33"));
+        productOption.setName("сыр");
+        productOption.setMass(30);
+        productOption.setProductSet(Set.of(product3, product2, product4));
 
+        ProductOption productOption1 = new ProductOption();
+        productOption1.setPrise(new BigDecimal("66"));
+        productOption1.setName("сыр X2");
+        productOption1.setMass(60);
+        productOption1.setProductSet(Set.of(product3, product2, product4));
+
+        ProductOption productOption2 = new ProductOption();
+        productOption2.setPrise(new BigDecimal("99"));
+        productOption2.setName("сыр X3");
+        productOption2.setMass(90);
+        productOption2.setProductSet(Set.of(product3, product2, product4));
+        productOptionRepo.save(productOption);
+        productOptionRepo.save(productOption1);
+        productOptionRepo.save(productOption2);
+
+        Branch branch = new Branch();
+        branch.setAddress("Улица Вершинина, 38");
+        branch.setPhoneNumber("222-333-44-55");
+        branch.setOpenFrom(new Date());
+        branch.setOpenTill(new Date());
+        branchRepo.save(branch);
+
+        Branch branch1 = new Branch();
+        branch1.setAddress("Тверская, 81");
+        branch1.setPhoneNumber("123-345-67-89");
+        branch1.setOpenFrom(new Date());
+        branch1.setOpenTill(new Date());
+        branchRepo.save(branch1);
+
+        Branch branch2 = new Branch();
+        branch2.setAddress("Улица Гоголя, 67");
+        branch2.setPhoneNumber("666-123-66-11");
+        branch2.setOpenFrom(new Date());
+        branch2.setOpenTill(new Date());
+        branchRepo.save(branch2);
+
+        BranchProduct branchProduct = new BranchProduct();
+        branchProduct.setHide(false);
+        branchProduct.setProduct(product);
+        branchProduct.setBranch(branch);
+        branchProduct.setId(new BranchProductKey(product.getId(), branch.getId()));
+        branchProductRepo.save(branchProduct);
+
+        BranchProduct branchProduct1 = new BranchProduct();
+        branchProduct1.setHide(false);
+        branchProduct1.setProduct(product2);
+        branchProduct1.setBranch(branch);
+        branchProduct1.setId(new BranchProductKey(product2.getId(), branch.getId()));
+        branchProductRepo.save(branchProduct1);
+
+        BranchProduct branchProduct2 = new BranchProduct();
+        branchProduct2.setHide(false);
+        branchProduct2.setProduct(product3);
+        branchProduct2.setBranch(branch);
+        branchProduct2.setId(new BranchProductKey(product3.getId(), branch.getId()));
+        branchProductRepo.save(branchProduct2);
+
+        BranchProduct branchProduct3 = new BranchProduct();
+        branchProduct3.setHide(false);
+        branchProduct3.setProduct(product4);
+        branchProduct3.setBranch(branch);
+        branchProduct3.setId(new BranchProductKey(product4.getId(), branch.getId()));
+        branchProductRepo.save(branchProduct3);
+
+        BranchProduct branchProduct4 = new BranchProduct();
+        branchProduct4.setHide(false);
+        branchProduct4.setProduct(product5);
+        branchProduct4.setBranch(branch);
+        branchProduct4.setId(new BranchProductKey(product5.getId(), branch.getId()));
+        branchProductRepo.save(branchProduct4);
+
+        BranchProduct branchProduct5 = new BranchProduct();
+        branchProduct5.setHide(false);
+        branchProduct5.setProduct(product6);
+        branchProduct5.setBranch(branch);
+        branchProduct5.setId(new BranchProductKey(product6.getId(), branch.getId()));
+        branchProductRepo.save(branchProduct5);
+
+        BranchProduct branchProduct6 = new BranchProduct();
+        branchProduct6.setHide(false);
+        branchProduct6.setProduct(product4);
+        branchProduct6.setBranch(branch2);
+        branchProduct6.setId(new BranchProductKey(product4.getId(), branch2.getId()));
+        branchProductRepo.save(branchProduct6);
+
+        Order order1 = new Order();
+        Order order = new Order();
+
+        Payment payment = new Payment();
+        payment.setPaymentType(PaymentType.CARD);
+        payment.setPaymentState(PaymentState.NO_PAYMENT);
+        paymentRepo.save(payment);
+
+        Payment payment1 = new Payment();
+        payment1.setPaymentType(PaymentType.SBP);
+        payment1.setPaymentState(PaymentState.PAYMENT_DONE);
+        paymentRepo.save(payment1);
+
+        order.setOrderState(OrderState.DELIVERED);
+        order.setSum(new BigDecimal("700"));
+        order.setUserDetails(userDetails);
+        order.setPayment(payment);
+
+        order1.setOrderState(OrderState.CANCELLED_BY_USER);
+        order1.setSum(new BigDecimal("750"));
+        order1.setUserDetails(userDetails);
+        order1.setPayment(payment1);
+        orderRepo.save(order1);
+        orderRepo.save(order);
+
+        OrderContent orderContent2 = new OrderContent();
+        orderContent2.setProduct(product3);
+        orderContent2.setNum(4);
+        orderContent2.setOrder(order);
+        orderContent2.setBranch(branch);
+        orderContent2.setId(new OrderContentKey(product3.getId(), order.getId()));
+        orderContentRepo.save(orderContent2);
+
+
+        OrderContent orderContent3 = new OrderContent();
+        orderContent3.setProduct(product4);
+        orderContent3.setNum(1);
+        orderContent3.setOrder(order1);
+        orderContent3.setBranch(branch2);
+        orderContent3.setId(new OrderContentKey(product4.getId(), order1.getId()));
+        orderContentRepo.save(orderContent3);
+
+
+        OrderContent orderContent = new OrderContent();
+        orderContent.setProduct(product2);
+        orderContent.setNum(1);
+        orderContent.setBranch(branch);
+        orderContent.setOrder(order);
+        orderContent.setId(new OrderContentKey(product2.getId(), order.getId()));
+        orderContentRepo.save(orderContent);
+
+        OrderContent orderContent1 = new OrderContent();
+        orderContent1.setProduct(product4);
+        orderContent1.setNum(1);
+        orderContent1.setOrder(order);
+        orderContent1.setBranch(branch);
+        orderContent1.setId(new OrderContentKey(product4.getId(), order.getId()));
+        orderContentRepo.save(orderContent1);
     }
-
 }

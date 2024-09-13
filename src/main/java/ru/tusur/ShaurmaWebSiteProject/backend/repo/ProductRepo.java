@@ -10,5 +10,5 @@ import java.util.List;
 @Repository
 public interface ProductRepo extends JpaRepository<Product, Long> {
     List<Product> findByProductTypeOrderByRankAsc(ProductTypeEntity productType);
-    List<Product> findByOrderByRankDesc();
+    List<Product> findByProductType(ProductTypeEntity productType);
 }

@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,8 +32,6 @@ public class Product {
 
     private Integer mass;
 
-    private Integer discount;
-
     @Column(columnDefinition="BOOLEAN DEFAULT true")
     private boolean active = true;
 
@@ -45,18 +44,27 @@ public class Product {
     @JoinColumn(name="type_id", nullable=false)
     private ProductTypeEntity productType;
 
-//    @ElementCollection(fetch = FetchType.EAGER)
-//    @JoinTable(name="content_map", joinColumns=@JoinColumn(name="ID"))
-//    @MapKeyColumn (name="content_name")
-//    @Column(name="content_mass")
-//    private Map<String, Float> contentMap = new HashMap<>();
+    @OneToMany(mappedBy="product")
+    private Set<Review> reviews;
+
+    @OneToMany(mappedBy = "product")
+    Set<OrderContent> orderContents;
+
+//    @OneToMany(mappedBy = "products")
+//    Set<FeaturedOrder> featuredOrders;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @JoinTable(name="content_map", joinColumns=@JoinColumn(name="product_id", referencedColumnName = "id"))
+    @MapKeyColumn (name="content_name")
+    @Column(name="content_mass")
+    private Map<String, Integer> contentMap = new HashMap<>();
 
     public boolean equalsAllParams(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
         Product product = (Product) o;
-        return active == product.active && id.equals(product.id) && Objects.equals(name, product.name) && Objects.equals(previewUrl, product.previewUrl) && Objects.equals(price, product.price) && Objects.equals(mass, product.mass) && Objects.equals(discount, product.discount) && Objects.equals(description, product.description) && Objects.equals(rank, product.rank) && productType == product.productType;
+        return active == product.active && id.equals(product.id) && Objects.equals(name, product.name) && Objects.equals(previewUrl, product.previewUrl) && Objects.equals(price, product.price) && Objects.equals(mass, product.mass) && Objects.equals(description, product.description) && Objects.equals(rank, product.rank) && productType == product.productType;
     }
 
     @Override

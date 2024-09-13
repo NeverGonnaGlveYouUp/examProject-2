@@ -1,8 +1,6 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.service;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.login.AbstractLogin;
-import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
 import jakarta.security.auth.message.AuthException;
@@ -74,7 +72,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     public void store(UserDetails userDetails) throws ServiceException {
         if (!userDetailsRepo.findByUsername(userDetails.getUsername()).isEmpty())
             throw new ServiceException("Это имя пользователя уже занято.");
-        if (!Objects.equals(userDetails.getRoles(), Roles.ADMIN)) userDetails.setRoles(Roles.USER);
+        if (!Objects.equals(userDetails.getRole(), Roles.ADMIN)) userDetails.setRole(Roles.USER);
         userDetails.setPassword(delegatingPasswordEncoder.passwordEncoder().encode(userDetails.getTransientPassword()));
         userDetailsRepo.save(userDetails);
     }

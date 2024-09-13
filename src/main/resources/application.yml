@@ -1,0 +1,57 @@
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  datasource:
+    url: jdbc:postgresql://localhost:5432/note_taking_app_postgres_db
+    username: postgres
+    password: 123
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+  jpa:
+    defer-datasource-initialization: true
+    open-in-view: true
+    hibernate:
+      schema_update:
+        unique_constraint_strategy: RECREATE_QUIETLY
+#      ddl-auto: create
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        schema_update:
+          unique_constraint_strategy: RECREATE_QUIETLY
+        format_sql: true
+  application:
+    name: ShaurmaWebSiteProject
+#  mvc:
+#    pathmatch:
+#      matching-strategy: ant_path_matcher
+  main:
+    banner-mode: "off"
+server:
+  error:
+    whitelabel:
+      enabled: true
+    include-stacktrace: always
+  address: localhost
+  port: ${PORT:8080}
+vaadin:
+  allowed-packages: ru.tusur.ShaurmaWebSiteProject, com.vaadin, org.vaadin
+logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %highlight(%-5level) %yellow(%logger{40}.%M\\(%class{0}.java:%line\\)) - %msg%throwable%n"
+  level:
+    root: DEBUG
+  org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLogger: INFO
+  org.springframework.beans.factory.support.DefaultListableBeanFactory: INFO
+  org.springframework.boot.test.context.SpringBootTestContextBootstrapper: WARN
+  org.springframework.test.context.support.AbstractContextLoader: OFF
+  org.springframework.test.context.support.AnnotationConfigContextLoaderUtils: OFF
+  org.springframework.web: trace
+  ru.tusur.examProject.service.EmailSenderService: INFO
+external:
+  server:
+    address: http://localhost:8080 # Do not include trailing slash

@@ -9,8 +9,12 @@ import static java.util.Arrays.asList;
 @Component
 public class SimpleCacheCustomizer implements CacheManagerCustomizer<ConcurrentMapCacheManager> {
 
+    public static final String PRODUCTS = "products";
+    public static final String PRODUCT = "product";
+    public static final String PROMOTIONS = "promotions";
+
     @Override
     public void customize(ConcurrentMapCacheManager cacheManager) {
-        cacheManager.setCacheNames(asList("products", "promotions"));
+        cacheManager.setCacheNames(asList(PRODUCTS, PRODUCT, PROMOTIONS));
     }
 }

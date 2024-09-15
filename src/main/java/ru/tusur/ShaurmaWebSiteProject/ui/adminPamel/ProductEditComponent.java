@@ -13,7 +13,7 @@ import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.dom.Style;
 import lombok.Getter;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.MainPageProductRepresentation;
 
 
@@ -31,11 +31,11 @@ public class ProductEditComponent extends Div{
     private Button clear;
     private Button save;
 
-    public ProductEditComponent(ProductRepo productRepo) {
+    public ProductEditComponent(ProductService productService) {
 
-        mainPageProductRepresentation = new MainPageProductRepresentation(productRepo);
+        mainPageProductRepresentation = new MainPageProductRepresentation();
         mainPageProductRepresentation.createContextMenus();
-        productInDetailsRepresentation = new MainPageProductRepresentation(productRepo);
+        productInDetailsRepresentation = new MainPageProductRepresentation();
         productInDetailsRepresentation.createContextMenus();
         productEditDialog = new Dialog(createDialogLayout(mainPageProductRepresentation));
         productAsOnMainPage = new Tab(new Span("Как на главной"));
@@ -53,7 +53,7 @@ public class ProductEditComponent extends Div{
             } else if (tabs.getSelectedTab().equals(productInDetails)) {
                 this.product = productInDetailsRepresentation.getProduct();
             }
-            productRepo.save(product);
+            productService.update(product);
             productEditDialog.close();
         });
 
@@ -61,7 +61,7 @@ public class ProductEditComponent extends Div{
         clear = new Button("Очистить");
         clear.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
         clear.addClickListener(buttonClickEvent -> {
-            Product product1 = productRepo.findById(productAsWas.getId()).orElse(productAsWas);
+            Product product1 = productService.findById(productAsWas.getId()).orElse(productAsWas);
             productAsWas = product1;
             product = product1;
             productInDetailsRepresentation.populateComponents(product1);
@@ -77,7 +77,7 @@ public class ProductEditComponent extends Div{
 
         delete = new Button("Удалить");
         delete.addClickListener(buttonClickEvent -> {
-            productRepo.delete(product);
+            productService.delete(product);
             productEditDialog.close();
         });
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);

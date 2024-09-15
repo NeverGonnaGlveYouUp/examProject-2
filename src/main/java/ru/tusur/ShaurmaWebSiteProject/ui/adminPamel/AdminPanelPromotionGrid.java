@@ -20,15 +20,17 @@ import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 public class AdminPanelPromotionGrid extends VerticalLayout {
     public static final String name = "Таблица акций";
     static TabSheet tabSheet = new TabSheet();
-    public AdminPanelPromotionGrid(ProductRepo productRepo, SecurityService securityService, ProductTypeEntityRepo productTypeEntityRepo) {
-        add(new Div(new Text("asdasd")));
-
+    public HorizontalLayout subViews = new HorizontalLayout();
+    public AdminPanelPromotionGrid(ProductTypeEntityRepo productTypeEntityRepo) {
         addAttachListener(event -> {
-            AdminPrefixPage.subViews.removeAll();
+            subViews.removeAll();
+            subViews.add(getSecondaryNavigation(productTypeEntityRepo));
         });
+
+        add(subViews, new Div(new Text("asdasd")));
     }
 
-    public static TabSheet getSecondaryNavigation(ProductRepo productRepo, SecurityService securityService, ProductTypeEntityRepo productTypeEntityRepo) {
+    public static TabSheet getSecondaryNavigation(ProductTypeEntityRepo productTypeEntityRepo) {
         tabSheet = new TabSheet();
         productTypeEntityRepo.findAll().forEach(productType -> tabSheet.add(productType.getName(), new Div(new Text(productType.getName() + "таблица акций"))));
 

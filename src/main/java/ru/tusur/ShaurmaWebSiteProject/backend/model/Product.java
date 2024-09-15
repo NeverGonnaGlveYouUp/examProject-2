@@ -3,6 +3,7 @@ package ru.tusur.ShaurmaWebSiteProject.backend.model;
 
 import com.vaadin.hilla.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.atmosphere.config.service.Get;
 
@@ -26,6 +27,7 @@ public class Product {
 
     private String name;
 
+    @NotNull
     private String previewUrl;
 
     private BigDecimal price;

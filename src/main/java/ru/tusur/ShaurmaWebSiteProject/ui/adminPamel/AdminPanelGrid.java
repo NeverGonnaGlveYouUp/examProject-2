@@ -6,22 +6,32 @@ import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Hr;
+import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.InputStreamFactory;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
+import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.math.RoundingMode;
 import java.util.LinkedList;
 import java.util.Objects;
@@ -32,19 +42,14 @@ import java.util.Optional;
 @PageTitle("Панель администратора - таблица товара")
 public class AdminPanelGrid extends VerticalLayout {
     public static final String name = "Таблица товара";
+    public HorizontalLayout subViews = new HorizontalLayout();
     static LinkedList<Product> productLinkedList = null;
     static Grid<Product> grid = null;
-    static TabSheet tabSheet = new TabSheet();
-    public AdminPanelGrid(ProductRepo productRepo, SecurityService securityService, ProductTypeEntityRepo productTypeEntityRepo) {
-        productLinkedList = new LinkedList<>(productRepo.findByProductTypeOrderByRankAsc(productTypeEntityRepo.findById(1L).get()));
-        setupGrid(productRepo);
-        tabSheet.addSelectedChangeListener(event -> {
-//            changeGridContent(productRepo, ProductType.of(event.getSelectedTab().getLabel()).orElse(null));
-            changeGridContent(productRepo, productTypeEntityRepo.findByName(event.getSelectedTab().getLabel()).get());
-        });
+    public AdminPanelGrid(ProductService productService, SecurityService securityService, ProductTypeEntityRepo productTypeEntityRepo) {
+        productLinkedList = new LinkedList<>(productService.findByProductTypeOrderByRankAsc(productTypeEntityRepo.findById(1L).orElseThrow(() -> new NotFoundException("product list ont found"))));
+        setupGrid();
 
-
-        ProductEditComponent productEditComponent = new ProductEditComponent(productRepo);
+        ProductEditComponent productEditComponent = new ProductEditComponent(productService);
         ProductContextMenu productContextMenu = new ProductContextMenu(grid, productEditComponent);
         productEditComponent.getDelete().addClickListener(buttonClickEvent -> {
             Product product = productEditComponent.getProduct();
@@ -70,40 +75,59 @@ public class AdminPanelGrid extends VerticalLayout {
         });
 
         addAttachListener(event -> {
-            AdminPrefixPage.subViews.removeAll();
-            AdminPrefixPage.subViews.add(getSecondaryNavigation(productRepo, securityService, productTypeEntityRepo));
+            subViews.removeAll();
+            TabSheet tabSheet = getSecondaryNavigation(productTypeEntityRepo);
+            tabSheet.addSelectedChangeListener(event1 -> {
+                changeGridContent(productService, productTypeEntityRepo.findByName(event1.getSelectedTab().getLabel()).orElseThrow(() -> new NotFoundException("product types not found")));
+            });
+
+            subViews.add(tabSheet);
         });
 //        HorizontalLayout layout = new HorizontalLayout(grid);
 //        layout.setAlignSelf(FlexComponent.Alignment.STRETCH, grid);
 //        layout.getStyle().setWidth("100%");
 //        layout.setPadding(true);
-        this.add(grid, productContextMenu);
+        this.add(subViews, grid, productContextMenu);
 
     }
 
-    public static TabSheet  getSecondaryNavigation(ProductRepo productRepo, SecurityService securityService, ProductTypeEntityRepo productTypeEntityRepo) {
-        tabSheet = new TabSheet();
+    public TabSheet  getSecondaryNavigation(ProductTypeEntityRepo productTypeEntityRepo) {
+        TabSheet tabSheet = new TabSheet();
         productTypeEntityRepo.findAll().forEach(productType -> tabSheet.add(productType.getName(), new Div(new Text(productType.getName()))));
-
-
-        HorizontalLayout navigation = new HorizontalLayout();
         tabSheet.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Gap.SMALL, LumoUtility.Height.MEDIUM);
         return tabSheet;
     }
 
-    private static void changeGridContent(ProductRepo productRepo, ProductTypeEntity productType){
-        productLinkedList = new LinkedList<>(productRepo.findByProductTypeOrderByRankAsc(productType));
-        grid.setItems(productLinkedList);
+    private void changeGridContent(ProductService productService, ProductTypeEntity productType){
+        productLinkedList.clear();
+        productLinkedList.addAll(productService.findByProductTypeOrderByRankAsc(productType));
+        grid.getDataProvider().refreshAll();
     }
 
 
-    public static void setupGrid(ProductRepo productRepo) {
+    public void setupGrid() {
         grid = new Grid<>(Product.class, false);
         grid.addColumn(product -> Optional.ofNullable(product.getName()).orElse("Н/д")).setHeader("Название").setResizable(true).setSortable(false).setFrozen(true).setAutoWidth(true).setFlexGrow(0);
-        grid.addColumn(product -> Optional.ofNullable(product.getPrice()).map(bigDecimal -> bigDecimal.setScale(2, RoundingMode.UP).toString()).orElse("Н/д")).setHeader("Цена ₽").setResizable(true).setSortable(false);
+        grid.addComponentColumn(product -> {
+            if (!product.getPreviewUrl().isEmpty()){
+                Image image = new Image(new StreamResource(FilenameUtils.getName(product.getPreviewUrl()), (InputStreamFactory) () -> {
+                    try {
+                        return new DataInputStream(new FileInputStream(product.getPreviewUrl()));
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                }), "My Streamed Image");
+                image.addClassName("containImg");
+                return image;
+            } else {
+                return new Icon(VaadinIcon.FILE_PICTURE);
+            }}).setHeader("Картинка").setResizable(true).setSortable(false);
+//        grid.addComponentColumn(product -> createStatusIcon(product.getPreviewUrl().isEmpty())).setHeader("Картинка").setResizable(true).setSortable(false);
 //        grid.addColumn(product -> Optional.ofNullable(product.getDiscount()).map(Object::toString).orElse("Н/д")).setHeader("Скидка %").setResizable(true).setSortable(false);
+        grid.addColumn(product -> Optional.ofNullable(product.getPrice()).map(bigDecimal -> bigDecimal.setScale(2, RoundingMode.UP).toString()).orElse("Н/д")).setHeader("Цена ₽").setResizable(true).setSortable(false);
         grid.addColumn(product -> Optional.ofNullable(product.getMass()).map(Objects::toString).orElse("Н/д")).setHeader("Масса г").setResizable(true).setSortable(false);
-        grid.addComponentColumn(product -> createStatusIcon(product.getPreviewUrl().isEmpty())).setHeader("Картинка").setResizable(true).setSortable(false);
+
+
         grid.addComponentColumn(product -> createStatusIcon(product.isActive())).setTooltipGenerator(product -> String.valueOf(product.isActive())).setHeader("Активно").setResizable(true).setSortable(false);
         grid.setItems(productLinkedList);
     }

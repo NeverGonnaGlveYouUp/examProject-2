@@ -1,5 +1,6 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.mainLayout;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
@@ -17,6 +18,8 @@ import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
 import ru.tusur.ShaurmaWebSiteProject.ui.security.UserProfile;
 
 import java.util.LinkedList;
+import java.util.Objects;
+import java.util.Optional;
 
 public interface Header {
 
@@ -24,7 +27,7 @@ public interface Header {
         Div div = new Div();
         H1 title = new H1(text);
         div.add(title);
-        div.addClickListener(event -> UI.getCurrent().navigate(MainPage.class));
+//        div.addClickListener(event -> UI.getCurrent().navigate(MainPage.class));
         title.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("left", "var(--lumo-space-l)").set("margin", "0")
                 .set("position", "relative");

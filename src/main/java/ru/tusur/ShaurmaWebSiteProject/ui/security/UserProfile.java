@@ -63,7 +63,7 @@ public class UserProfile extends AppLayout implements Header {
 
     SecurityService securityService;
 
-    public UserProfile(SecurityService securityService, ProductRepo productRepo, UserDetailsRepo userDetailsRepo) {
+    public UserProfile(SecurityService securityService, UserDetailsRepo userDetailsRepo) {
         this.securityService = securityService;
 
         DrawerToggle drawerToggle = new DrawerToggle();

@@ -14,12 +14,8 @@ import java.util.List;
 
 public class MainLayout extends AppLayout implements RouterLayout, Header {
 
-    @Autowired
-    ProductService productService;
-
     protected MainLayout(SecurityService securityService){
         addClassNames(LumoUtility.Display.FLEX, LumoUtility.Width.FULL);
         addToNavbar(getMyTitle());
-        productService.cacheAllProducts();
     }
 }

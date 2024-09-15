@@ -1,55 +1,64 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.service;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.vaadin.crudui.crud.CrudListener;
+import ru.tusur.ShaurmaWebSiteProject.backend.config.SimpleCacheCustomizer;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
-@Component
-public class ProductService implements CrudListener<Product> {
+public class ProductService{
 
     @Autowired
     private ProductRepo productRepo;
 
-    @Autowired
-    private ProductTypeEntityRepo productTypeEntityRepo;
-
-    @Override
+    @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
     public Collection<Product> findAll() {
         return productRepo.findAll();
     }
 
-    @Override
+    @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
     public Product add(Product product) {
+        System.out.println("asdasdAdd");
         return productRepo.save(product);
     }
 
-    @Override
+    @Caching(evict = {
+            @CacheEvict(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id"),
+            @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
+    })
     public Product update(Product product) {
+        System.out.println("asdasdSave");
         return productRepo.save(product);
     }
 
-    @Override
+    @Caching(evict = {
+            @CacheEvict(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id"),
+            @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
+    })
     public void delete(Product product) {
+        System.out.println("asdasdDel");
         productRepo.delete(product);
     }
 
-    @CacheEvict(value = "products", allEntries = true)
-    public List<Product> cacheAllProducts(){
-        List<Product> products = new LinkedList<>();
-        this.productTypeEntityRepo.findAll().forEach(productType -> products.addAll(productRepo.findByProductType(productType)));
-        return products;
+    @Cacheable(value = SimpleCacheCustomizer.PRODUCTS, key = "#productType.id")
+    public Collection<? extends Product> findByProductTypeOrderByRankAsc(ProductTypeEntity productType) {
+        System.out.println("asdasd");
+        return productRepo.findByProductTypeOrderByRankAsc(productType);
+    }
+
+    @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
+    public Optional<Product> findById(Long id) {
+        System.out.println("asdasdById");
+        return productRepo.findById(id);
     }
 }

@@ -51,7 +51,6 @@ logging:
   org.springframework.test.context.support.AbstractContextLoader: OFF
   org.springframework.test.context.support.AnnotationConfigContextLoaderUtils: OFF
   org.springframework.web: trace
-  ru.tusur.examProject.service.EmailSenderService: INFO
 external:
   server:
     address: http://localhost:8080 # Do not include trailing slash

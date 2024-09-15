@@ -28,7 +28,7 @@ import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.i18n.UploadExamplesI18N;
 
 import java.io.*;
@@ -56,10 +56,8 @@ public class MainPageProductRepresentation extends Component implements HasCompo
     private Div descriptionComponent;
     private Div submitButtonComponent;
 
-    ProductRepo productRepo;
 
-    public MainPageProductRepresentation(ProductRepo productRepo) {
-        this.productRepo = productRepo;
+    public MainPageProductRepresentation() {
         initComponent();
         this.add(verticalLayout);
     }

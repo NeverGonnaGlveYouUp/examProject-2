@@ -18,9 +18,8 @@ import java.util.List;
 public class MainPage extends MainLayout {
     LinkedList<Div> linkedList = new LinkedList<>(List.of(new Div(new Button("btn1-MainLayout")), new Div(new Button("btn2-MainLayout")), new Div(new Button("btn3-MainLayout")), new Div(new Button("btn4-MainLayout"))));
 
-    private ProductRepo productRepo;
 
-    public MainPage(SecurityService securityService, ProductRepo productRepo){
+    public MainPage(SecurityService securityService){
         super(securityService);
         addToNavbar(getMyNavBar(securityService, linkedList));
 

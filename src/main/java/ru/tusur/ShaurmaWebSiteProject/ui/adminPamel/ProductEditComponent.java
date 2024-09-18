@@ -11,12 +11,14 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.router.NotFoundException;
 import lombok.Getter;
+import lombok.Setter;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.MainPageProductRepresentation;
 
-
+@Setter
 @Getter
 public class ProductEditComponent extends Div{
     private Dialog productEditDialog;
@@ -25,8 +27,7 @@ public class ProductEditComponent extends Div{
     private MainPageProductRepresentation mainPageProductRepresentation;
     private MainPageProductRepresentation productInDetailsRepresentation;
     private VerticalLayout dialogMainBody;
-    private Product productAsWas = null;
-    private Product product;
+    public Product product;
     private Button delete;
     private Button clear;
     private Button save;
@@ -48,9 +49,9 @@ public class ProductEditComponent extends Div{
         save = new Button("Сохранить");
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
         save.addClickListener(buttonClickEvent -> {
-            if(tabs.getSelectedTab().equals(productAsOnMainPage)){
+            if(tabs.getSelectedTab().equals(productAsOnMainPage) && this.isAttached()){
                 this.product = mainPageProductRepresentation.getProduct();
-            } else if (tabs.getSelectedTab().equals(productInDetails)) {
+            } else if (tabs.getSelectedTab().equals(productInDetails) && this.isAttached()) {
                 this.product = productInDetailsRepresentation.getProduct();
             }
             productService.update(product);
@@ -61,11 +62,10 @@ public class ProductEditComponent extends Div{
         clear = new Button("Очистить");
         clear.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
         clear.addClickListener(buttonClickEvent -> {
-            Product product1 = productService.findById(productAsWas.getId()).orElse(productAsWas);
-            productAsWas = product1;
+            Product product1 = productService.findById(product.getId()).orElseThrow(() -> new NotFoundException("product by id not found"));
             product = product1;
-            productInDetailsRepresentation.populateComponents(product1);
-            mainPageProductRepresentation.populateComponents(product1);
+            productInDetailsRepresentation.populateComponents(product);
+            mainPageProductRepresentation.populateComponents(product);
 //            productEditDialog.close();
         });
 
@@ -104,7 +104,6 @@ public class ProductEditComponent extends Div{
     }
 
     public void open(Product product){
-        this.productAsWas = product;
         this.product = product;
         productEditDialog.open();
         mainPageProductRepresentation.populateComponents(product);

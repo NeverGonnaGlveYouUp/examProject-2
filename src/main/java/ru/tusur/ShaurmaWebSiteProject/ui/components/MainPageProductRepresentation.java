@@ -318,7 +318,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
                 } else {
                     massSpan.setText(String.valueOf(product.getMass()) + " г");
                 }
-                massComponent.add(new Span(String.valueOf(massSpan)));
+                massComponent.add(massSpan);
 
                 dialog.close();
             });

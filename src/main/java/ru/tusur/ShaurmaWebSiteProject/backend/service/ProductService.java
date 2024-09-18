@@ -37,7 +37,7 @@ public class ProductService{
             @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
     })
     public Product update(Product product) {
-        System.out.println("asdasdSave");
+        System.out.println("asdasdUpdate");
         return productRepo.save(product);
     }
 
@@ -56,7 +56,7 @@ public class ProductService{
         return productRepo.findByProductTypeOrderByRankAsc(productType);
     }
 
-    @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
+    @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#id")
     public Optional<Product> findById(Long id) {
         System.out.println("asdasdById");
         return productRepo.findById(id);

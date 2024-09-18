@@ -29,6 +29,12 @@ vaadin-vertical-layout[class~="login-view"]{
     object-fit: fill;
 }
 
+.containImg1 > img{
+    width: 9%;
+    height: 9%;
+    object-fit: fill;
+}
+
 .mainPageProductElementPlaceholder:hover{
     background-color: #ddd;
 }
@@ -55,15 +61,4 @@ vaadin-vertical-layout[class~="login-view"]{
     border: 2px solid #878181; /* Solid border with the specified color */
     border-radius: 15px;
     display: flex;
-}
-
-vaadin-grid.force-focus-outline::part(focused-cell)::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    pointer-events: none;
-    box-shadow: inset 0 0 0 2px var(--lumo-primary-color-50pct);
 }

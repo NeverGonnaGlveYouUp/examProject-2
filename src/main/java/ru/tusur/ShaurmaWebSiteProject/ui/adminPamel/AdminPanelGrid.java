@@ -1,6 +1,12 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.adminPamel;
 
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.contextmenu.MenuItem;
+import com.vaadin.flow.component.contextmenu.SubMenu;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.contextmenu.GridContextMenu;
 import com.vaadin.flow.component.grid.contextmenu.GridMenuItem;
@@ -9,6 +15,7 @@ import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
@@ -20,15 +27,14 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 
+import java.awt.*;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -40,17 +46,18 @@ import java.util.Optional;
 @Route(value = "grid-product", layout = AdminPrefixPage.class)
 @RolesAllowed(value = {Roles.ADMIN})
 @PageTitle("Панель администратора - таблица товара")
+@CssImport(value = "vaadin-grid.css", themeFor = "vaadin-grid")
 public class AdminPanelGrid extends VerticalLayout {
     public static final String name = "Таблица товара";
     public HorizontalLayout subViews = new HorizontalLayout();
-    static LinkedList<Product> productLinkedList = null;
-    static Grid<Product> grid = null;
+    private LinkedList<Product> productLinkedList = null;
+    private Grid<Product> grid = null;
+    private ProductEditComponent productEditComponent;
     public AdminPanelGrid(ProductService productService, SecurityService securityService, ProductTypeEntityRepo productTypeEntityRepo) {
         productLinkedList = new LinkedList<>(productService.findByProductTypeOrderByRankAsc(productTypeEntityRepo.findById(1L).orElseThrow(() -> new NotFoundException("product list ont found"))));
+        productEditComponent = new ProductEditComponent(productService);
         setupGrid();
-
-        ProductEditComponent productEditComponent = new ProductEditComponent(productService);
-        ProductContextMenu productContextMenu = new ProductContextMenu(grid, productEditComponent);
+//        ProductContextMenu productContextMenu = new ProductContextMenu(grid, productEditComponent);
         productEditComponent.getDelete().addClickListener(buttonClickEvent -> {
             Product product = productEditComponent.getProduct();
             if (product == null)
@@ -71,7 +78,7 @@ public class AdminPanelGrid extends VerticalLayout {
             if (product == null)
                 return;
             productLinkedList.set(productLinkedList.indexOf(product), product);
-            grid.getDataProvider().refreshAll();
+            grid.getDataProvider().refreshItem(product);
         });
 
         addAttachListener(event -> {
@@ -87,7 +94,8 @@ public class AdminPanelGrid extends VerticalLayout {
 //        layout.setAlignSelf(FlexComponent.Alignment.STRETCH, grid);
 //        layout.getStyle().setWidth("100%");
 //        layout.setPadding(true);
-        this.add(subViews, grid, productContextMenu);
+//        this.add(subViews, grid, productContextMenu);
+        this.add(subViews, grid);
 
     }
 
@@ -107,6 +115,8 @@ public class AdminPanelGrid extends VerticalLayout {
 
     public void setupGrid() {
         grid = new Grid<>(Product.class, false);
+        grid.addClassName("hover-on-cursor");
+        grid.setSelectionMode(Grid.SelectionMode.NONE);
         grid.addColumn(product -> Optional.ofNullable(product.getName()).orElse("Н/д")).setHeader("Название").setResizable(true).setSortable(false).setFrozen(true).setAutoWidth(true).setFlexGrow(0);
         grid.addComponentColumn(product -> {
             if (!product.getPreviewUrl().isEmpty()){
@@ -117,7 +127,7 @@ public class AdminPanelGrid extends VerticalLayout {
                         throw new RuntimeException(e);
                     }
                 }), "My Streamed Image");
-                image.addClassName("containImg");
+                image.getStyle().setHeight("25%").setWidth("50%");
                 return image;
             } else {
                 return new Icon(VaadinIcon.FILE_PICTURE);
@@ -126,9 +136,8 @@ public class AdminPanelGrid extends VerticalLayout {
 //        grid.addColumn(product -> Optional.ofNullable(product.getDiscount()).map(Object::toString).orElse("Н/д")).setHeader("Скидка %").setResizable(true).setSortable(false);
         grid.addColumn(product -> Optional.ofNullable(product.getPrice()).map(bigDecimal -> bigDecimal.setScale(2, RoundingMode.UP).toString()).orElse("Н/д")).setHeader("Цена ₽").setResizable(true).setSortable(false);
         grid.addColumn(product -> Optional.ofNullable(product.getMass()).map(Objects::toString).orElse("Н/д")).setHeader("Масса г").setResizable(true).setSortable(false);
-
-
-        grid.addComponentColumn(product -> createStatusIcon(product.isActive())).setTooltipGenerator(product -> String.valueOf(product.isActive())).setHeader("Активно").setResizable(true).setSortable(false);
+        grid.addComponentColumn(product -> new HideProductCheckbox(product, productEditComponent)).setHeader("Сокрытие").setResizable(true).setSortable(false);
+        grid.addComponentColumn(product -> new ProductContextMenu(product, productEditComponent));
         grid.setItems(productLinkedList);
     }
 
@@ -145,46 +154,35 @@ public class AdminPanelGrid extends VerticalLayout {
         return icon;
     }
 
-    private static class ProductContextMenu extends GridContextMenu<Product> {
-        public ProductContextMenu(Grid<Product> target, ProductEditComponent productEditComponent) {
-            super(target);
-            setOpenOnClick(true);
-            addItem("Редактировать", productGridContextMenuItemClickEvent -> productGridContextMenuItemClickEvent.getItem().ifPresent(productEditComponent::open));
-
-            addItem("Скрыть", productGridContextMenuItemClickEvent -> productGridContextMenuItemClickEvent.getItem().ifPresent(product ->
-            {
-
-            }));
-
-            addItem("Удалить", productGridContextMenuItemClickEvent -> productGridContextMenuItemClickEvent.getItem().ifPresent(product -> {
-
-            }));
-
-            add(new Hr());
-
-            GridMenuItem<Product> nameItem = addItem("Название", productGridContextMenuItemClickEvent ->
-                    productGridContextMenuItemClickEvent.getItem().ifPresent(product -> {
-
-                    }));
-
-
-            GridMenuItem<Product> isActiveItem = addItem("Активно", productGridContextMenuItemClickEvent ->
-                    productGridContextMenuItemClickEvent.getItem().ifPresent(product -> {
-
-                    }));
-
-            setDynamicContentHandler(product -> {
-
-                if (product == null) return false;
-
-                nameItem.setText(String.format("Название: %s", product.getName()));
-                isActiveItem.setText(String.format("Активно: %s", product.isActive()));
-
-                return true;
-
+    private static class HideProductCheckbox extends Checkbox {
+        public HideProductCheckbox(Product product, ProductEditComponent productEditComponent) {
+            this.setValue(!product.isActive());
+            this.addValueChangeListener(event -> {
+                product.setActive(!event.getValue());
+                productEditComponent.setProduct(product);
+                productEditComponent.getSave().click();
             });
-
+            this.setTooltipText("Скрыт ли этот продукт");
         }
     }
 
+    private static class ProductContextMenu extends MenuBar{
+
+        public ProductContextMenu(Product product, ProductEditComponent productEditComponent) {
+            ComponentEventListener<ClickEvent<MenuItem>> listener = e -> productEditComponent.open(product);
+            ComponentEventListener<ClickEvent<MenuItem>> listener1 = e -> product.setActive(e.getSource().isChecked());
+            MenuItem onEdit = createIconItem(this);
+            SubMenu editMediaSubMenu = onEdit.getSubMenu();
+            editMediaSubMenu.addItem("Редактировать", listener);
+            editMediaSubMenu.add(new Hr());
+            editMediaSubMenu.addItem("Удалить", listener1);
+        }
+
+        private MenuItem createIconItem(MenuBar menu) {
+            Icon icon = new Icon(VaadinIcon.ELLIPSIS_DOTS_H);
+            MenuItem item = menu.addItem(icon);
+            item.setAriaLabel("Edit");
+            return item;
+        }
+    }
 }

@@ -1,0 +1,3 @@
+[part~="row"]:hover > [part~="body-cell"]{
+background-color: rgb(228, 240, 255);
+}

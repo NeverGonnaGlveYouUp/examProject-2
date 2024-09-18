@@ -52,9 +52,6 @@ public class Product {
     @OneToMany(mappedBy = "product")
     Set<OrderContent> orderContents;
 
-//    @OneToMany(mappedBy = "products")
-//    Set<FeaturedOrder> featuredOrders;
-
     @ElementCollection(fetch = FetchType.EAGER)
     @JoinTable(name="content_map", joinColumns=@JoinColumn(name="product_id", referencedColumnName = "id"))
     @MapKeyColumn (name="content_name")

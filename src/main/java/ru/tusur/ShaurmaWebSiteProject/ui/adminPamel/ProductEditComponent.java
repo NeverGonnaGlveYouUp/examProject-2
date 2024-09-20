@@ -3,7 +3,9 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -12,15 +14,17 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import lombok.Getter;
 import lombok.Setter;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.MainPageProductRepresentation;
+import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.Dialogs;
 
 @Setter
 @Getter
-public class ProductEditComponent extends Div{
+public class ProductEditComponent extends Div implements Dialogs {
     private Dialog productEditDialog;
     private Tab productAsOnMainPage;
     private Tab productInDetails;
@@ -28,12 +32,14 @@ public class ProductEditComponent extends Div{
     private MainPageProductRepresentation productInDetailsRepresentation;
     private VerticalLayout dialogMainBody;
     public Product product;
+    public ProductService productService;
     private Button delete;
     private Button clear;
     private Button save;
+    public Dialog confirmDeletionDialog;
 
     public ProductEditComponent(ProductService productService) {
-
+        this.productService = productService;
         mainPageProductRepresentation = new MainPageProductRepresentation();
         mainPageProductRepresentation.createContextMenus();
         productInDetailsRepresentation = new MainPageProductRepresentation();
@@ -41,10 +47,9 @@ public class ProductEditComponent extends Div{
         productEditDialog = new Dialog(createDialogLayout(mainPageProductRepresentation));
         productAsOnMainPage = new Tab(new Span("Как на главной"));
         productInDetails = new Tab(new Span("Подробно"));
-
         Tabs tabs = new Tabs(productAsOnMainPage, productInDetails);
         tabs.addThemeVariants(TabsVariant.LUMO_EQUAL_WIDTH_TABS);
-
+        Button cancel = new Button(new Icon("lumo", "cross"), (e) -> productEditDialog.close());
 
         save = new Button("Сохранить");
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_SMALL);
@@ -77,8 +82,7 @@ public class ProductEditComponent extends Div{
 
         delete = new Button("Удалить");
         delete.addClickListener(buttonClickEvent -> {
-            productService.delete(product);
-            productEditDialog.close();
+            confirmDeletionDialog.open();
         });
         delete.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_SMALL);
         delete.getStyle().set("margin-inline-end", "auto");
@@ -91,20 +95,26 @@ public class ProductEditComponent extends Div{
         buttonLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
         buttonLayout.setAlignSelf(FlexComponent.Alignment.START);
 
-
+        cancel.getStyle().setPadding("16px");
+        HorizontalLayout horizontalLayout = new HorizontalLayout(new H2("Редактирование товара"), cancel);
+        VerticalLayout topLayout = new VerticalLayout(horizontalLayout, tabs);
+        topLayout.addClassName(LumoUtility.AlignContent.CENTER);
+        topLayout.addClassName(LumoUtility.AlignItems.STRETCH);
 
         productEditDialog.setCloseOnOutsideClick(false);
         productEditDialog.setCloseOnEsc(false);
         productEditDialog.setResizable(true);
         productEditDialog.setDraggable(true);
+        productEditDialog.getHeader().add(topLayout);
         productEditDialog.getFooter().add(buttonLayout);
-        productEditDialog.getHeader().add(tabs);
 
         tabs.addSelectedChangeListener(selectedChangeEvent -> setContent(selectedChangeEvent.getSelectedTab()));
     }
 
     public void open(Product product){
         this.product = product;
+        confirmDeletionDialog = confirmDeletionDialog(product, productService);
+        confirmDeletionDialog.setId("confirmDeletionDialog");
         productEditDialog.open();
         mainPageProductRepresentation.populateComponents(product);
         productInDetailsRepresentation.populateComponents(product);

@@ -28,7 +28,6 @@ import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
-import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.i18n.UploadExamplesI18N;
 
 import java.io.*;
@@ -51,7 +50,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
     private Div imageComponent;
     private Div priceComponent;
     private Div massComponent;
-//    private final Div discountComponent;
+    //    private final Div discountComponent;
     private Div nameComponent;
     private Div descriptionComponent;
     private Div submitButtonComponent;
@@ -62,13 +61,14 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         this.add(verticalLayout);
     }
 
-    public MainPageProductRepresentation(Product product){
+    public MainPageProductRepresentation(Product product) {
         this.product = product;
         initComponent();
+        populateComponents(product);
         this.add(verticalLayout);
     }
 
-    private void initComponent(){
+    private void initComponent() {
         verticalLayout = new VerticalLayout();
         imageComponent = new Div();
         priceGroup = new HorizontalLayout();
@@ -128,7 +128,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         span2.getElement().getThemeList().add("badge small primary");
         nameComponent.add(span2);
 
-        if(!StringUtils.isEmpty(product.getName())){
+        if (!StringUtils.isEmpty(product.getName())) {
             nameComponent.removeAll();
             nameComponent.add(new Span(product.getName()));
         }
@@ -138,7 +138,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         span1.getElement().getThemeList().add("badge small primary");
         priceComponent.add(new Span(span1));
 
-        if (Optional.ofNullable(product.getPrice()).isPresent()){
+        if (Optional.ofNullable(product.getPrice()).isPresent()) {
             priceComponent.removeAll();
             priceComponent.add(new Span(product.getPrice().setScale(2, RoundingMode.UP).toString() + " ₽"));
         }
@@ -157,11 +157,11 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         massComponent.removeAll();
         plaseholderSpan.setText("Масса");
         massComponent.add(plaseholderSpan);
-        if(Optional.ofNullable(product.getMass()).isPresent()){
+        if (Optional.ofNullable(product.getMass()).isPresent()) {
             Span massSpan = new Span();
             massComponent.removeAll();
-            if(product.getMass() >= 1000){
-                massSpan.setText(String.valueOf(product.getMass()/1000f) + " кг");
+            if (product.getMass() >= 1000) {
+                massSpan.setText(String.valueOf(product.getMass() / 1000f) + " кг");
             } else {
                 massSpan.setText(String.valueOf(product.getMass()) + " г");
             }
@@ -263,7 +263,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             }
         }
 
-        private @NotNull Dialog attachSetupMassDialog(){
+        private @NotNull Dialog attachSetupMassDialog() {
             Dialog dialog = new Dialog();
 
             IntegerField massField = new IntegerField();
@@ -272,11 +272,11 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             massField.setSuffixComponent(new Span("г"));
             massField.addValueChangeListener(numberFieldDoubleComponentValueChangeEvent -> {
                 Integer mass = massField.getValue();
-                if(mass != null){
-                    if(mass.compareTo(massField.getMin()) < 0){
+                if (mass != null) {
+                    if (mass.compareTo(massField.getMin()) < 0) {
                         massField.setErrorMessage("Масса не может быть меньще нуля.");
                         massField.setInvalid(true);
-                    } else if (mass.compareTo(massField.getMin()) == 0){
+                    } else if (mass.compareTo(massField.getMin()) == 0) {
                         massField.setErrorMessage("Масса не может быть равна нулю.");
                         massField.setInvalid(true);
                     } else {
@@ -290,20 +290,19 @@ public class MainPageProductRepresentation extends Component implements HasCompo
 
             submit.addClickListener(buttonClickEvent -> {
                 Integer mass = massField.getValue();
-                if(mass != null){
-                    if(mass.compareTo(massField.getMin()) < 0){
+                if (mass != null) {
+                    if (mass.compareTo(massField.getMin()) < 0) {
                         massField.setErrorMessage("Масса не может быть меньще нуля.");
                         massField.setInvalid(true);
                         return;
-                    } else if (mass.compareTo(massField.getMin()) == 0){
+                    } else if (mass.compareTo(massField.getMin()) == 0) {
                         massField.setErrorMessage("Масса не может быть равна нулю.");
                         massField.setInvalid(true);
                         return;
                     } else {
                         massField.setInvalid(false);
                     }
-                }
-                else {
+                } else {
                     massField.setErrorMessage("Введите массу");
                     massField.setInvalid(true);
                     return;
@@ -313,8 +312,8 @@ public class MainPageProductRepresentation extends Component implements HasCompo
 
                 massComponent.removeAll();
                 Span massSpan = new Span();
-                if(product.getMass() >= 1000){
-                    massSpan.setText(String.valueOf(product.getMass()/1000f) + " кг");
+                if (product.getMass() >= 1000) {
+                    massSpan.setText(String.valueOf(product.getMass() / 1000f) + " кг");
                 } else {
                     massSpan.setText(String.valueOf(product.getMass()) + " г");
                 }
@@ -337,7 +336,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             return dialog;
         }
 
-        private @NotNull Dialog attachSetupNameDialog(){
+        private @NotNull Dialog attachSetupNameDialog() {
             Dialog dialog = new Dialog();
 
             TextField nameField = new TextField();
@@ -348,7 +347,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             Button submit = new Button("Сохранить");
             submit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             submit.addClickListener(buttonClickEvent -> {
-                if(nameField.getOptionalValue().isEmpty()){
+                if (nameField.getOptionalValue().isEmpty()) {
                     nameField.setInvalid(true);
                     return;
                 }
@@ -369,7 +368,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             formLayout.add(nameField);
 
             dialog.addAttachListener(attachEvent -> {
-                if(Optional.ofNullable(product.getName()).isPresent()) nameField.setValue(product.getName());
+                if (Optional.ofNullable(product.getName()).isPresent()) nameField.setValue(product.getName());
             });
             dialog.add(formLayout);
             dialog.getHeader().add(cancel);
@@ -387,10 +386,11 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             priceField.setLabel("Цена");
             priceField.setSuffixComponent(new Span("RUB"));
             priceField.addValueChangeListener(numberFieldDoubleComponentValueChangeEvent -> {
-                if(Optional.ofNullable(product.getPrice()).isPresent() && priceField.getValue() == null) priceField.setValue(product.getPrice());
+                if (Optional.ofNullable(product.getPrice()).isPresent() && priceField.getValue() == null)
+                    priceField.setValue(product.getPrice());
                 BigDecimal price = priceField.getValue();
-                if(price != null){
-                    if(price.compareTo(new BigDecimal("0")) == 0){
+                if (price != null) {
+                    if (price.compareTo(new BigDecimal("0")) == 0) {
                         priceField.setErrorMessage("Цена не может быть равна нулю");
                         priceField.setInvalid(true);
                     } else if (price.compareTo(new BigDecimal("0")) < 0) {
@@ -438,8 +438,8 @@ public class MainPageProductRepresentation extends Component implements HasCompo
             submit.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
             submit.addClickListener(buttonClickEvent -> {
                 BigDecimal price = priceField.getValue();
-                if(price != null){
-                    if(price.compareTo(new BigDecimal("0")) == 0){
+                if (price != null) {
+                    if (price.compareTo(new BigDecimal("0")) == 0) {
                         priceField.setErrorMessage("Цена не может быть равна нулю");
                         priceField.setInvalid(true);
                         return;
@@ -549,6 +549,7 @@ public class MainPageProductRepresentation extends Component implements HasCompo
 
     @Tag("my-big-decimal-field")
     @JsModule("./my-big-decimal-field.js")
-    static class MyBigDecimalField extends BigDecimalField { }
+    static class MyBigDecimalField extends BigDecimalField {
+    }
 
 }

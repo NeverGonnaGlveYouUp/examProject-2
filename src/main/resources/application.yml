@@ -31,7 +31,13 @@ spring:
 #      matching-strategy: ant_path_matcher
   main:
     banner-mode: "off"
+jwt:
+  auth:
+    secret: "J6GOtcwC2NJI1l0VkHu20PacPFGTxpirBxWwynoHjsc="
 server:
+  servlet:
+    session:
+      tracking-modes: cookie
   error:
     whitelabel:
       enabled: true

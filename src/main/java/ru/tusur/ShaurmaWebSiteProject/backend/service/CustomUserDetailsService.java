@@ -5,6 +5,9 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.VaadinSession;
 import jakarta.security.auth.message.AuthException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,7 +17,11 @@ import ru.tusur.ShaurmaWebSiteProject.backend.repo.UserDetailsRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.DelegatingPasswordEncoder;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -28,27 +35,38 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     public void checkCredentials(String username, String password) throws AuthException {
+        //State auth
         UserDetails userDetails = loadUserByUsername(username);
+        //Stateless auth
+        //User userDetails = loadUserByUsername(username);
         if (!passwordEncoder.matches(password, userDetails.getPassword()))
             throw new AuthException("Что-то пошло не так, попробуйте снова.");
-        VaadinSession.getCurrent().setAttribute(UserDetails.class, userDetails);
-
-//        getAuthorizedRoutes(userDetails.getRoles()).stream().forEach(authorizedRoute ->
-//                RouteConfiguration
-//                        .forSessionScope()
-//                        .setRoute(authorizedRoute.route,
-//                                authorizedRoute.view,
-//                                authorizedRoute.parent));
+        VaadinSession.getCurrent().setAttribute(String.valueOf(UserDetails.class), userDetails);
     }
 
+    //State auth
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userDetailsRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
+    //Stateless auth
+//    @Override
+//    public User loadUserByUsername(String username) throws UsernameNotFoundException {
+//        Optional<UserDetails> user = userDetailsRepo.findByUsername(username);
+//        if (user.isEmpty()) {
+//            throw new UsernameNotFoundException("No user present with username: " + username);
+//        } else {
+//            return new org.springframework.security.core.userdetails.User(
+//                    user.get().getUsername(),
+//                    user.get().getPassword(),
+//                    getAuthorities(user.get()));
+//        }
+//    }
 
-    public record AuthorizedRoute(String route, Class<? extends Component> view, Class<? extends RouterLayout> parent) {
-    }
+    private static List<GrantedAuthority> getAuthorities(UserDetails user) {
+        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
+        }
 
 
 //    public List<AuthorizedRoute> getAuthorizedRoutes(String roles) {
@@ -64,11 +82,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 //        return routes;
 //    }
 
-    /**
-     * 'Stores' the bean.
-     * <p>
-     * In /reality it just throws ServiceException from time to time.
-     */
     public void store(UserDetails userDetails) throws ServiceException {
         if (!userDetailsRepo.findByUsername(userDetails.getUsername()).isEmpty())
             throw new ServiceException("Это имя пользователя уже занято.");
@@ -77,10 +90,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         userDetailsRepo.save(userDetails);
     }
 
-    /**
-     * Utility Exception class that we can use in the frontend to show that
-     * something went wrong during save.
-     */
     public static class ServiceException extends Exception {
         public ServiceException(String msg) {
             super(msg);

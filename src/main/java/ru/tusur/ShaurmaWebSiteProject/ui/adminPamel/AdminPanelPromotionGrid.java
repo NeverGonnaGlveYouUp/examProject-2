@@ -18,7 +18,7 @@ import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 @RolesAllowed(value = {Roles.ADMIN})
 @PageTitle("Панель администратора - таблица акций")
 public class AdminPanelPromotionGrid extends VerticalLayout {
-    public static final String name = "Таблица акций";
+    public static final String name = "Акции";
     static TabSheet tabSheet = new TabSheet();
     public HorizontalLayout subViews = new HorizontalLayout();
     public AdminPanelPromotionGrid(ProductTypeEntityRepo productTypeEntityRepo) {

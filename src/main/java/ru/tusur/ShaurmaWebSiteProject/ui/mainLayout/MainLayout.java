@@ -13,9 +13,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class MainLayout extends AppLayout implements RouterLayout, Header {
-
+    //Stateless auth
+//    protected MainLayout(){
+//        addClassNames(LumoUtility.Display.FLEX, LumoUtility.Width.FULL);
+//    }
+    //State auth
     protected MainLayout(SecurityService securityService){
         addClassNames(LumoUtility.Display.FLEX, LumoUtility.Width.FULL);
         addToNavbar(getMyTitle());
+
     }
 }

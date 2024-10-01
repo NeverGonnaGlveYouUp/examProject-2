@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.Set;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -36,4 +38,7 @@ public class Promotion{
 
     @NotNull
     private String promotionEffect;
+
+    @OneToMany(mappedBy = "promotion")
+    private Set<Order> orders;
 }

@@ -1,9 +1,11 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.config;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.DelegatingPasswordEncoder;
@@ -15,7 +17,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
+import java.util.Base64;
 import java.util.Date;
 import java.util.Set;
 
@@ -53,6 +57,10 @@ class SecurityConfig extends VaadinWebSecurity {
     @Autowired
     DelegatingPasswordEncoder delegatingPasswordEncoder;
 
+//    get jwt key
+//    @Value("${jwt.auth.secret}")
+//    private String authSecret;
+
     @Bean
     public AuthenticationProvider authenticationProvider(){
         DaoAuthenticationProvider provider = new CustomDao();
@@ -66,12 +74,14 @@ class SecurityConfig extends VaadinWebSecurity {
         http.authorizeHttpRequests(auth ->
                         auth
                                 .requestMatchers(antMatchers("/")).permitAll()
-//                        .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/themes/*")).permitAll()
         );
 
         super.configure(http);
         setLoginView(http, LoginView.class);
         http.formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.defaultSuccessUrl("/"));
+
+        //JWT Auth
+//        setStatelessAuthentication(http, new SecretKeySpec(Base64.getDecoder().decode(authSecret), JwsAlgorithms.HS256), "ru.tusur.ShaurmaWebSiteProject");
 
 
 

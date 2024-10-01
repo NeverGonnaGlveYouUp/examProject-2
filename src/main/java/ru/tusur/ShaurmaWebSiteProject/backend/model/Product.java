@@ -34,8 +34,6 @@ public class Product {
 
     private Integer mass;
 
-    @Column(columnDefinition="BOOLEAN DEFAULT true")
-    private boolean active = true;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -57,14 +55,6 @@ public class Product {
     @MapKeyColumn (name="content_name")
     @Column(name="content_mass")
     private Map<String, Integer> contentMap = new HashMap<>();
-
-    public boolean equalsAllParams(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Product product = (Product) o;
-        return active == product.active && id.equals(product.id) && Objects.equals(name, product.name) && Objects.equals(previewUrl, product.previewUrl) && Objects.equals(price, product.price) && Objects.equals(mass, product.mass) && Objects.equals(description, product.description) && Objects.equals(rank, product.rank) && productType == product.productType;
-    }
 
     @Override
     public boolean equals(Object o) {

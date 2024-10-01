@@ -1,0 +1,3 @@
+:host([loading]) [part~='loader'] {
+    animation: 1s linear infinite lumo-loader-rotate, 0.3s 0.1s lumo-loader-fade-in both;
+}

@@ -31,6 +31,10 @@ public class Order {
     @JoinColumn(name = "payment_id", referencedColumnName = "id")
     private Payment payment;
 
+    @ManyToOne
+    @JoinColumn(name="promotion_id")
+    private Promotion promotion;
+
     private BigDecimal sum;
 
     @Enumerated(EnumType.STRING)

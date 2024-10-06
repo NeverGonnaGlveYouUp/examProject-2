@@ -34,7 +34,7 @@ public class ProductEditComponent extends Div implements Dialogs {
     public Product product;
     public ProductService productService;
     private Button delete;
-    private Button clear;
+//    private Button clear;
     private Button save;
     public Dialog confirmDeletionDialog;
 
@@ -63,16 +63,18 @@ public class ProductEditComponent extends Div implements Dialogs {
             productEditDialog.close();
         });
 
+//
+//        clear = new Button("Очистить");
+//        clear.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
+//        clear.addClickListener(buttonClickEvent -> {
+//            Product product1 = productService.findById(product.getId()).orElseThrow(() -> new NotFoundException("product by id not found"));
+//            product = product1;
+//            productInDetailsRepresentation.populateComponents(product);
+//            mainPageProductRepresentation.populateComponents(product);
+////            productEditDialog.close();
+//        });
 
-        clear = new Button("Очистить");
-        clear.addThemeVariants(ButtonVariant.LUMO_TERTIARY, ButtonVariant.LUMO_SMALL);
-        clear.addClickListener(buttonClickEvent -> {
-            Product product1 = productService.findById(product.getId()).orElseThrow(() -> new NotFoundException("product by id not found"));
-            product = product1;
-            productInDetailsRepresentation.populateComponents(product);
-            mainPageProductRepresentation.populateComponents(product);
-//            productEditDialog.close();
-        });
+
 
         Button closeButton = new Button("Закрыть");
         closeButton.addThemeVariants(ButtonVariant.LUMO_SMALL);
@@ -88,7 +90,7 @@ public class ProductEditComponent extends Div implements Dialogs {
         delete.getStyle().set("margin-inline-end", "auto");
         delete.getStyle().setAlignSelf(Style.AlignSelf.FLEX_START);
 
-        HorizontalLayout buttonLayout = new HorizontalLayout(delete, clear, closeButton, save);
+        HorizontalLayout buttonLayout = new HorizontalLayout(delete, save);
         buttonLayout.getStyle().set("flex-wrap", "wrap");
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
         buttonLayout.setPadding(false);

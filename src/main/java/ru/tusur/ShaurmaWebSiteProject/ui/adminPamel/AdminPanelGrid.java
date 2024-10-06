@@ -1,5 +1,6 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.adminPamel;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
@@ -16,6 +17,7 @@ import com.vaadin.flow.component.menubar.MenuBarVariant;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -23,11 +25,13 @@ import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
+import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
+import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.Dialogs;
 
@@ -35,10 +39,8 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.math.RoundingMode;
-import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Route(value = "grid-product", layout = AdminPrefixPage.class)
 @RolesAllowed(value = {Roles.ADMIN})
@@ -46,20 +48,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 @CssImport(value = "vaadin-grid.css", themeFor = "vaadin-grid")
 public class AdminPanelGrid extends VerticalLayout implements Dialogs {
     public static final String name = "Товары";
+    private final ProductService productService;
+    @Getter
+    private final SecurityService securityService;
+    @Getter
+    private final Set<ProductTypeEntity> allProdictEntitySet = new HashSet<>();
+    @Getter
+    private final TabSheet tabSheet = new TabSheet();
 
-    public AdminPanelGrid(ProductService productService, ProductTypeEntityRepo productTypeEntityRepo) {
+    public AdminPanelGrid(ProductService productService,
+                          ProductTypeEntityRepo productTypeEntityRepo,
+                          SecurityService securityService) {
+        this.productService = productService;
+        this.securityService = securityService;
         addAttachListener(event -> {
 
-            TabSheet tabSheet = new TabSheet();
             tabSheet.setWidth("100%");
 
             productTypeEntityRepo.findAll().forEach(
                     productType -> {
+                        allProdictEntitySet.add(productType);
                         Tab tab = tabSheet.add(
                                 productType.getName(),
-                                new GridForTab(productService, productType)
+                                new GridForTab(productType)
                         );
-                        Button close = new Button("X", clickEvent -> tabSheet.remove(tab));
+                        Button close = new Button("X", clickEvent -> {
+                            tabSheet.remove(tab);
+                        });
                         close.getElement().getThemeList().add("badge small contrast");
                         close.getStyle().set("margin-inline-start", "var(--lumo-space-xs)");
                         close.setVisible(false);
@@ -70,12 +85,33 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
                     }
             );
 
-
             tabSheet.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.Gap.SMALL, LumoUtility.Height.MEDIUM);
 
             MenuBar menuBar = new MenuBar();
             menuBar.addThemeVariants(MenuBarVariant.LUMO_ICON, MenuBarVariant.LUMO_PRIMARY);
-            menuBar.addItem(VaadinIcon.PLUS.create());
+            menuBar.addItem(VaadinIcon.PLUS.create(), addTab -> {
+
+                Set<String> openTabs = tabSheet.getChildren()
+                        .filter(component -> component instanceof Tabs)
+                        .map(component -> (Tabs) component)
+                        .flatMap(Component::getChildren)
+                        .map(component -> (Tab) component)
+                        .map(Tab::getLabel)
+                        .collect(Collectors.toSet());
+
+                Set<String> allTabs = allProdictEntitySet.stream()
+                                .map(ProductTypeEntity::getName)
+                                .collect(Collectors.toSet());
+
+                allTabs.removeAll(openTabs);
+
+                Set<ProductTypeEntity> tabsToOpen = allProdictEntitySet
+                        .stream()
+                        .filter(productType -> allTabs.contains(productType.getName()))
+                        .collect(Collectors.toSet());
+                    selectProductTypeDialog(this, tabsToOpen).open();
+            });
+
             MenuItem item = menuBar.addItem(new Icon(VaadinIcon.CHEVRON_DOWN));
             SubMenu subItems = item.getSubMenu();
             subItems.addItem("Создать тип");
@@ -85,9 +121,9 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
             subItems.addItem(removeAllTabs, removeAllTabsEvent -> {
                 long end = tabSheet.getChildren().count();
                 int start = 0;
-                while (end != start){
+                while (end != start) {
                     tabSheet.remove(start);
-                    end-=1;
+                    end -= 1;
                 }
             });
 
@@ -96,11 +132,15 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
         });
     }
 
+    public GridForTab createGridForTab(ProductTypeEntity productType) {
+        return new GridForTab(productType);
+    }
+
     private class GridForTab extends Grid<Product> {
         private final ProductEditComponent productEditComponent;
         private LinkedList<Product> productLinkedList = null;
 
-        public GridForTab(ProductService productService, ProductTypeEntity productType){
+        public GridForTab(ProductTypeEntity productType) {
             super(Product.class, false);
             productLinkedList = new LinkedList<>(productService.findByProductTypeOrderByRankAsc(productType));
             productEditComponent = new ProductEditComponent(productService);
@@ -125,12 +165,12 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
                 });
             });
 
-            productEditComponent.getClear().addClickListener(buttonClickEvent -> {
-                Product product = productEditComponent.getProduct();
-                if (product == null)
-                    return;
-                this.getDataProvider().refreshItem(product);
-            });
+//            productEditComponent.getClear().addClickListener(buttonClickEvent -> {
+//                Product product = productEditComponent.getProduct();
+//                if (product == null)
+//                    return;
+//                this.getDataProvider().refreshItem(product);
+//            });
 
             productEditComponent.getSave().addClickListener(buttonClickEvent -> {
                 Product product = productEditComponent.getProduct();

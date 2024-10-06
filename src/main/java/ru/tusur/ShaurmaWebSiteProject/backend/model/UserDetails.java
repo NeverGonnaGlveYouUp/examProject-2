@@ -37,7 +37,7 @@ public class UserDetails implements org.springframework.security.core.userdetail
 
     private String role;
 
-    @NotNull
+//    @NotNull
     @Length(min = 8, max = 64)
     @Transient
     private String transientPassword;

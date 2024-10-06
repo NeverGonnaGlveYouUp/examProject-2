@@ -30,7 +30,6 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.*;
@@ -40,7 +39,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
 import org.jetbrains.annotations.NotNull;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.UserDetailsRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
@@ -166,7 +164,7 @@ public class UserProfile extends AppLayout implements Header {
     @CssImport(value = "vaadin-menu-bar-button.css", themeFor = "vaadin-menu-bar-button")
     public static class PersonalDetails extends VerticalLayout implements Header {
         public final static String name = "Личные данные";
-        private final UserDetails userDetails;
+        private final SecurityService securityService;
         private final UserDetailsRepo userDetailsRepo;
         private Avatar avatar;
         private Icon checkIcon;
@@ -174,7 +172,7 @@ public class UserProfile extends AppLayout implements Header {
         private Button saveButton;
 
         PersonalDetails(SecurityService securityService, UserDetailsRepo userDetailsRepo){
-            this.userDetails = securityService.getAuthenticatedUser();
+            this.securityService = securityService;
             this.userDetailsRepo = userDetailsRepo;
             addClassNames(LumoUtility.Gap.MEDIUM);
             getStyle().setPosition(Style.Position.RELATIVE);
@@ -183,11 +181,11 @@ public class UserProfile extends AppLayout implements Header {
         }
 
         private Div getUserDetailsInputForms(){
+            final UserDetails userDetails = securityService.getAuthenticatedUser();
             Div div = new Div();
             FormLayout formLayout = new FormLayout();
             HorizontalLayout horizontalLayout = new HorizontalLayout();
             VerticalLayout verticalLayout = new VerticalLayout();
-
             avatar = new Avatar(userDetails.getUsername());
             avatar.setColorIndex((userDetails.getUsername().hashCode() % 7) - 1);
             avatar.setImage(userDetails.getAvatarUrl());
@@ -253,13 +251,14 @@ public class UserProfile extends AppLayout implements Header {
 
             saveButton = new Button("Сохранить");
             saveButton.addClickListener(event -> {
-                userDetails.setUsername(nameField.getValue());
-                userDetails.setEmail(emailField.getValue());
-                    userDetailsRepo.save(userDetails);
-                    Notification notification = Notification.show("Данные обновлены!");
-                    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
-                    notification.setPosition(Notification.Position.BOTTOM_END);
-                    notification.setDuration(6000);
+                final UserDetails userDetailsAnon = securityService.getAuthenticatedUser();
+                userDetailsAnon.setUsername(nameField.getValue());
+                userDetailsAnon.setEmail(emailField.getValue());
+                userDetailsRepo.save(userDetailsAnon);
+                Notification notification = Notification.show("Данные обновлены!");
+                notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+                notification.setPosition(Notification.Position.BOTTOM_END);
+                notification.setDuration(6000);
             });
             nameField.addValueChangeListener(event -> saveButton.setEnabled(!userDetails.getUsername().equals(event.getValue())));
             emailField.addValueChangeListener(event -> {
@@ -290,6 +289,7 @@ public class UserProfile extends AppLayout implements Header {
         }
 
         private PasswordField getPasswordChangeForm(){
+            UserDetails userDetails = securityService.getAuthenticatedUser();
             PasswordField passwordField = new PasswordField();
             passwordField.setLabel("Пароль");
             passwordField.setValue(userDetails.getPassword());
@@ -330,6 +330,7 @@ public class UserProfile extends AppLayout implements Header {
         }
 
         private @NotNull Dialog attachUploadDialog() {
+            UserDetails userDetails = securityService.getAuthenticatedUser();
             Dialog dialog = new Dialog();
             dialog.setHeaderTitle("Загрузка аватара");
             VerticalLayout verticalLayout1 = new VerticalLayout();

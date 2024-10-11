@@ -103,7 +103,7 @@ class SecurityConfig extends VaadinWebSecurity {
         Product product = new Product();
         product.setName("Шаверма из кота");
         product.setPrice(new BigDecimal("350.99"));
-        product.setPreviewUrl("src/main/resources/META-INF/resources/images/564008-shaurma-35.jpg");
+        product.setPreviewUrl("src/main/resources/META-INF/resources/images/img.png");
         product.setRank(1);
         product.setProductType(productType);
 //        product.setProductType(ProductType.SHAURMA);
@@ -116,7 +116,7 @@ class SecurityConfig extends VaadinWebSecurity {
         Product product2 = new Product();
         product2.setName("Шаверма из кота V2");
         product2.setPrice(new BigDecimal("350.99"));
-        product2.setPreviewUrl("src/main/resources/META-INF/resources/images/564008-shaurma-35.jpg");
+        product2.setPreviewUrl("src/main/resources/META-INF/resources/images/img.png");
         product2.setRank(2);
         product2.setProductType(productType);
 //        product2.setProductType(ProductType.SHAURMA);

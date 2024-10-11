@@ -36,23 +36,13 @@ public class AdminPrefixPage extends AppLayout implements Header {
         title.getStyle().set("font-size", "var(--lumo-font-size-l)")
                 .set("line-height", "var(--lumo-size-l)")
                 .set("margin", "0 var(--lumo-space-m)");
-        ;
-
-//        HorizontalLayout subViews = AdminPanelGrid.getSecondaryNavigation(productRepo, securityService, productTypeEntityRepo);
-
 
         HorizontalLayout wrapper = new HorizontalLayout(toggle, getMyTitle(AdminPanelGrid.name), getMyAvatarInMyNavBar(securityService));
         wrapper.setAlignItems(FlexComponent.Alignment.CENTER);
         wrapper.getStyle().setWidth("100%");
         wrapper.setSpacing(false);
-
-        VerticalLayout viewHeader = new VerticalLayout(wrapper);
-//        VerticalLayout viewHeader = new VerticalLayout(wrapper, subViews);
-        viewHeader.setPadding(false);
-        viewHeader.setSpacing(false);
-
+        addToNavbar(wrapper);
         addToDrawer(title, scroller);
-        addToNavbar(viewHeader);
 
         setPrimarySection(Section.DRAWER);
 

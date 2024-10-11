@@ -51,8 +51,11 @@ public class MainPage extends MainLayout implements LazyPlaceholder {
         addToNavbar(getMyNavBar(securityService, linkedList));
         lazyLoadProductsRepresentations();
         lazyLoadAdminButton();
-
+        verticalLayout.getStyle().setMarginLeft("5%");
+        verticalLayout.getStyle().setMarginRight("5%");
         setContent(verticalLayout);
+        getContent().getStyle().setMarginLeft("10%");
+        getContent().getStyle().setMarginRight("10%");
     }
 
     private void lazyLoadAdminButton() {

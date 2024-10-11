@@ -117,7 +117,6 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         verticalLayout.getStyle()
                 .setJustifyContent(Style.JustifyContent.NORMAL)
                 .setPosition(Style.Position.RELATIVE);
-
     }
 
     public void populateComponents(@NotNull Product product) {

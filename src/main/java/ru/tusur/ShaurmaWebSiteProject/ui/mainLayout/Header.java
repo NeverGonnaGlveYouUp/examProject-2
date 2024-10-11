@@ -1,6 +1,5 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.mainLayout;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
@@ -10,16 +9,20 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.server.InputStreamFactory;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.apache.commons.io.FilenameUtils;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.ui.adminPamel.AdminPanelGrid;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainPage.MainPage;
 import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
-import ru.tusur.ShaurmaWebSiteProject.ui.security.UserProfile;
+import ru.tusur.ShaurmaWebSiteProject.ui.security.UserProfileMain;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.LinkedList;
-import java.util.Objects;
-import java.util.Optional;
 
 public interface Header {
 
@@ -66,9 +69,21 @@ public interface Header {
     default Div setupAvatar (String username, String avatarUrl){
         Avatar avatar = new Avatar(username);
         Div div = new Div(avatar);
-        div.addClickListener(event -> UI.getCurrent().navigate(UserProfile.Main.class));
-        avatar.setImage(avatarUrl);
+        div.addClickListener(event -> UI.getCurrent().navigate(UserProfileMain.class));
+        if(avatarUrl != null){
+            StreamResource imageResource = new StreamResource(FilenameUtils.getName(avatarUrl), (InputStreamFactory) () -> {
+                try {
+                    return new DataInputStream(new FileInputStream(avatarUrl));
+                } catch (FileNotFoundException e){
+                    return null;
+                } catch (Exception e){
+                    throw new RuntimeException(e);
+                }
+            });
+            avatar.setImageResource(imageResource);
+        }
         avatar.setColorIndex((username.hashCode() % 7) - 1);
+
         div.addClassNames(LumoUtility.Display.FLEX, LumoUtility.AlignSelf.END,
                 LumoUtility.AlignItems.CENTER, LumoUtility.Padding.Horizontal.MEDIUM,
                 LumoUtility.TextColor.SECONDARY, LumoUtility.FontWeight.MEDIUM);

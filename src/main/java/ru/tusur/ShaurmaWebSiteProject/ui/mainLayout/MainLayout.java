@@ -17,10 +17,11 @@ public class MainLayout extends AppLayout implements RouterLayout, Header {
 //    protected MainLayout(){
 //        addClassNames(LumoUtility.Display.FLEX, LumoUtility.Width.FULL);
 //    }
+
     //State auth
     protected MainLayout(SecurityService securityService){
+        this.getStyle().setPaddingTop("24px");
         addClassNames(LumoUtility.Display.FLEX, LumoUtility.Width.FULL);
         addToNavbar(getMyTitle());
-
     }
 }

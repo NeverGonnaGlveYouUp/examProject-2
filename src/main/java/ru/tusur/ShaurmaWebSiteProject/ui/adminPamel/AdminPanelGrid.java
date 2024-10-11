@@ -6,6 +6,7 @@ import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Hr;
 import com.vaadin.flow.component.html.Image;
@@ -18,6 +19,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.tabs.Tabs;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -68,20 +70,7 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
             productTypeEntityRepo.findAll().forEach(
                     productType -> {
                         allProdictEntitySet.add(productType);
-                        Tab tab = tabSheet.add(
-                                productType.getName(),
-                                new GridForTab(productType)
-                        );
-                        Button close = new Button("X", clickEvent -> {
-                            tabSheet.remove(tab);
-                        });
-                        close.getElement().getThemeList().add("badge small contrast");
-                        close.getStyle().set("margin-inline-start", "var(--lumo-space-xs)");
-                        close.setVisible(false);
-                        tab.getElement().addEventListener("mouseover", mouseover -> close.setVisible(true));
-                        tab.getElement().addEventListener("mouseout", mouseover -> close.setVisible(false));
-                        tab.addComponentAtIndex(1, close);
-
+                        addTabToTabSheet(productType);
                     }
             );
 
@@ -114,7 +103,36 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
 
             MenuItem item = menuBar.addItem(new Icon(VaadinIcon.CHEVRON_DOWN));
             SubMenu subItems = item.getSubMenu();
-            subItems.addItem("Создать тип");
+            subItems.addItem("Создать тип", createProductType -> {
+
+                FormLayout formLayout = new FormLayout();
+                TextField name = new TextField();
+                name.setErrorMessage("Это имя уже используется.");
+                formLayout.add(name);
+
+                Dialog dialog = new Dialog();
+                dialog.add(formLayout);
+                dialog.setHeaderTitle("Новый тип продукта");
+
+                Button ok = new Button("Ок", (e) -> {
+                    String nameStr = name.getValue();
+                    if(!productTypeEntityRepo.existsProductTypeEntityByName(nameStr)){
+                        name.setInvalid(false);
+                        ProductTypeEntity productType = new ProductTypeEntity();
+                        productType.setName(nameStr);
+                        productTypeEntityRepo.save(productType);
+                        addTabToTabSheet(productType);
+                        dialog.close();
+                    } else name.setInvalid(true);
+                });
+                ok.getStyle().set("margin-inline-end", "auto");
+                dialog.getFooter().add(ok);
+
+                Button cancel = new Button(new Icon("lumo", "cross"), (e) -> dialog.close());
+                dialog.getHeader().add(cancel);
+                dialog.open();
+
+            });
 
             Span removeAllTabs = new Span("Закрыть все вкладки");
             removeAllTabs.getStyle().setColor("red");
@@ -130,6 +148,23 @@ public class AdminPanelGrid extends VerticalLayout implements Dialogs {
             tabSheet.setSuffixComponent(menuBar);
             this.add(tabSheet);
         });
+    }
+
+    private Tab addTabToTabSheet(ProductTypeEntity productType){
+        Tab tab = tabSheet.add(
+                productType.getName(),
+                new GridForTab(productType)
+        );
+        Button close = new Button("X", clickEvent -> {
+            tabSheet.remove(tab);
+        });
+        close.getElement().getThemeList().add("badge small contrast");
+        close.getStyle().set("margin-inline-start", "var(--lumo-space-xs)");
+        close.setVisible(false);
+        tab.getElement().addEventListener("mouseover", mouseover -> close.setVisible(true));
+        tab.getElement().addEventListener("mouseout", mouseout -> close.setVisible(false));
+        tab.addComponentAtIndex(1, close);
+        return tab;
     }
 
     public GridForTab createGridForTab(ProductTypeEntity productType) {

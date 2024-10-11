@@ -255,10 +255,11 @@ public class UserProfile extends AppLayout implements Header {
                 userDetailsAnon.setUsername(nameField.getValue());
                 userDetailsAnon.setEmail(emailField.getValue());
                 userDetailsRepo.save(userDetailsAnon);
+                avatar.setImage(userDetails.getAvatarUrl());
                 Notification notification = Notification.show("Данные обновлены!");
                 notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
                 notification.setPosition(Notification.Position.BOTTOM_END);
-                notification.setDuration(6000);
+                notification.setDuration(5000);
             });
             nameField.addValueChangeListener(event -> saveButton.setEnabled(!userDetails.getUsername().equals(event.getValue())));
             emailField.addValueChangeListener(event -> {

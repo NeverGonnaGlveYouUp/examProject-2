@@ -43,7 +43,6 @@ import ru.tusur.ShaurmaWebSiteProject.backend.repo.UserDetailsRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.i18n.UploadExamplesI18N;
-import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.Header;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -53,8 +52,8 @@ import java.util.Optional;
 @RolesAllowed(value = {Roles.USER, Roles.ADMIN})
 @PageTitle("Профиль - Личные данные")
 @Route(value = "details", layout = UserProfilePrefix.class)
-@CssImport(value = "vaadin-menu-bar-button.css", themeFor = "vaadin-menu-bar-button")
-public class UserProfileDetails extends VerticalLayout implements Header {
+//@CssImport(value = "vaadin-menu-bar-button.css", themeFor = "vaadin-menu-bar-button")
+public class UserProfileDetails extends VerticalLayout {
     public final static String name = "Личные данные";
     private final SecurityService securityService;
     private final UserDetailsRepo userDetailsRepo;

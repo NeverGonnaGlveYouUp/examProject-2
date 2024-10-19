@@ -1,10 +1,9 @@
-package ru.tusur.ShaurmaWebSiteProject.ui.adminPamel;
+package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.contextmenu.SubMenu;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
@@ -36,6 +35,7 @@ import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.Dialogs;
+import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
 
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -44,10 +44,10 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Route(value = "grid-product", layout = AdminPrefixPage.class)
+@Route(value = "Панель администратора - таблица товара", layout = MainLayout.class)
 @RolesAllowed(value = {Roles.ADMIN})
 @PageTitle("Панель администратора - таблица товара")
-@CssImport(value = "vaadin-grid.css", themeFor = "vaadin-grid")
+//@CssImport(value = "vaadin-grid.css", themeFor = "vaadin-grid")
 public class AdminPanelGrid extends VerticalLayout implements Dialogs {
     public static final String name = "Товары";
     private final ProductService productService;

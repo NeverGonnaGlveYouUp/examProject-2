@@ -1,8 +1,9 @@
-package ru.tusur.ShaurmaWebSiteProject.ui.components;
+package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.contextmenu.ContextMenu;
@@ -23,11 +24,15 @@ import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import io.micrometer.common.util.StringUtils;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
 import org.jetbrains.annotations.NotNull;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductOptionRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.ReviewRepo;
+import ru.tusur.ShaurmaWebSiteProject.ui.components.InDetailsProductRepresentation;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.i18n.UploadExamplesI18N;
 
 import java.io.*;
@@ -50,21 +55,25 @@ public class MainPageProductRepresentation extends Component implements HasCompo
     private Div imageComponent;
     private Div priceComponent;
     private Div massComponent;
-    //    private final Div discountComponent;
     private Div nameComponent;
     private Div descriptionComponent;
     private Div submitButtonComponent;
-
 
     public MainPageProductRepresentation() {
         initComponent();
         this.add(verticalLayout);
     }
 
-    public MainPageProductRepresentation(Product product) {
+    public MainPageProductRepresentation(Product product, ProductOptionRepo productOptionRepo, ReviewRepo reviewRepo) {
         this.product = product;
         initComponent();
         populateComponents(product);
+        Div div = new Div();
+        div.addClassName(LumoUtility.Flex.GROW);
+        verticalLayout.addClickListener(event -> {
+                    UI.getCurrent().navigate(InDetailsProductRepresentation.class, product.getName());
+                }
+        );
         this.add(verticalLayout);
     }
 
@@ -112,8 +121,8 @@ public class MainPageProductRepresentation extends Component implements HasCompo
         verticalLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
         verticalLayout.setAlignSelf(FlexComponent.Alignment.CENTER);
         verticalLayout.addClassName("mainPageProductBodyPlaceholder");
-        verticalLayout.setWidth("195px");
-        verticalLayout.setHeight("294px");
+        verticalLayout.setWidth("30%");
+        verticalLayout.setHeight("50%");
         verticalLayout.getStyle()
                 .setJustifyContent(Style.JustifyContent.NORMAL)
                 .setPosition(Style.Position.RELATIVE);

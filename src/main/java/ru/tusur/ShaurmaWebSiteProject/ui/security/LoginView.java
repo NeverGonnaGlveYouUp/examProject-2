@@ -13,7 +13,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import jakarta.security.auth.message.AuthException;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.CustomUserDetailsService;
-import ru.tusur.ShaurmaWebSiteProject.ui.mainPage.MainPage;
+import ru.tusur.ShaurmaWebSiteProject.ui.templates.MainProductView;
 
 import java.util.Collections;
 
@@ -64,7 +64,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                                 loginEvent.getUsername(),
                                 loginEvent.getPassword()
                         );
-                        UI.getCurrent().navigate(MainPage.class);
+                        UI.getCurrent().navigate(MainProductView.class);
                     } catch (AuthException e) {
                         loginForm.setError(true);
                     }

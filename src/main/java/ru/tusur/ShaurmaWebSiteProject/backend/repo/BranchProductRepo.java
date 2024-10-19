@@ -17,11 +17,13 @@ import java.util.Optional;
 @Repository
 public interface BranchProductRepo extends JpaRepository<BranchProduct, Long>, CustomBranchProductRepo {
 
+    Optional<BranchProduct> findTopByOrderByIdDesc();
+
+    Optional<BranchProduct> findTopByBranchAddress(String address);
 
     BranchProduct findById(BranchProductKey branchProductKey);
 
     List<Product> findAllProductByBranch(Branch branch);
-
     List<BranchProduct> findAllByBranch(Branch branch);
 
     @Modifying

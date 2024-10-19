@@ -36,51 +36,38 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public void checkCredentials(String username, String password) throws AuthException {
         //State auth
-        UserDetails userDetails = loadUserByUsername(username);
+//        UserDetails userDetails = loadUserByUsername(username);
         //Stateless auth
-        //User userDetails = loadUserByUsername(username);
+        User userDetails = loadUserByUsername(username);
         if (!passwordEncoder.matches(password, userDetails.getPassword()))
             throw new AuthException("Что-то пошло не так, попробуйте снова.");
         VaadinSession.getCurrent().setAttribute(String.valueOf(UserDetails.class), userDetails);
     }
 
     //State auth
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userDetailsRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
-    }
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        return userDetailsRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
+//    }
 
     //Stateless auth
-//    @Override
-//    public User loadUserByUsername(String username) throws UsernameNotFoundException {
-//        Optional<UserDetails> user = userDetailsRepo.findByUsername(username);
-//        if (user.isEmpty()) {
-//            throw new UsernameNotFoundException("No user present with username: " + username);
-//        } else {
-//            return new org.springframework.security.core.userdetails.User(
-//                    user.get().getUsername(),
-//                    user.get().getPassword(),
-//                    getAuthorities(user.get()));
-//        }
-//    }
+    @Override
+    public User loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<UserDetails> user = userDetailsRepo.findByUsername(username);
+        if (user.isEmpty()) {
+            throw new UsernameNotFoundException("No user present with username: " + username);
+        } else {
+            return new org.springframework.security.core.userdetails.User(
+                    user.get().getUsername(),
+                    user.get().getPassword(),
+                    getAuthorities(user.get()));
+        }
+    }
 
     private static List<GrantedAuthority> getAuthorities(UserDetails user) {
         return Collections.singletonList(new SimpleGrantedAuthority(user.getRole()));
         }
 
-
-//    public List<AuthorizedRoute> getAuthorizedRoutes(String roles) {
-//        var routes = new ArrayList<AuthorizedRoute>();
-//
-//        if (roles.equals(Roles.USER)) {
-//            routes.add(new AuthorizedRoute("/main-authenticated", AuthenticatedMainPage.class, MainLayout.class));
-//
-//        } else if (roles.equals(Roles.ADMIN)) {
-//            routes.add(new AuthorizedRoute("/main-authenticated-admin", AuthenticatedMainPage.class, MainLayout.class));
-//        }
-//
-//        return routes;
-//    }
 
     public void store(UserDetails userDetails) throws ServiceException {
         if (!userDetailsRepo.findByUsername(userDetails.getUsername()).isEmpty())

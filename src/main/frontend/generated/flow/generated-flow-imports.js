@@ -1,18 +1,9 @@
 import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';
 
 import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';
-import $cssFromFile_0 from 'Frontend/vaadin-grid.css?inline';
-const $css_0 = typeof $cssFromFile_0  === 'string' ? unsafeCSS($cssFromFile_0) : $cssFromFile_0;
-registerStyles('vaadin-grid', $css_0, {moduleId: 'flow_css_mod_0'});
-import $cssFromFile_1 from 'Frontend/vaadin-app-layout.css?inline';
-const $css_1 = typeof $cssFromFile_1  === 'string' ? unsafeCSS($cssFromFile_1) : $cssFromFile_1;
-registerStyles('vaadin-app-layout', $css_1, {moduleId: 'flow_css_mod_1'});
-import $cssFromFile_2 from 'Frontend/loader-placeholder-styles.css?inline';
+import $cssFromFile_0 from 'Frontend/loader-placeholder-styles.css?inline';
 
-injectGlobalCss($cssFromFile_2.toString(), 'CSSImport end', document);
-import $cssFromFile_3 from 'Frontend/vaadin-menu-bar-button.css?inline';
-const $css_3 = typeof $cssFromFile_3  === 'string' ? unsafeCSS($cssFromFile_3) : $cssFromFile_3;
-registerStyles('vaadin-menu-bar-button', $css_3, {moduleId: 'flow_css_mod_3'});
+injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);
 import '@vaadin/common-frontend/ConnectionIndicator.js';
 import '@vaadin/polymer-legacy-adapter/style-modules.js';
 import '@vaadin/accordion/theme/lumo/vaadin-accordion.js';

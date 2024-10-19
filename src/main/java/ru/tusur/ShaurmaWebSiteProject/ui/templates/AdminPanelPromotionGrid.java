@@ -1,4 +1,4 @@
-package ru.tusur.ShaurmaWebSiteProject.ui.adminPamel;
+package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Div;
@@ -9,12 +9,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
-import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
-import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
+import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
 
-@Route(value = "grid-promotion", layout = AdminPrefixPage.class)
+@Route(value = "Панель администратора - таблица акций", layout = MainLayout.class)
 @RolesAllowed(value = {Roles.ADMIN})
 @PageTitle("Панель администратора - таблица акций")
 public class AdminPanelPromotionGrid extends VerticalLayout {

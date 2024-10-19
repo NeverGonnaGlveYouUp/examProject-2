@@ -44,11 +44,14 @@ public class Product {
     @JoinColumn(name="type_id", nullable=false)
     private ProductTypeEntity productType;
 
-    @OneToMany(mappedBy="product")
+    @OneToMany(mappedBy="product", fetch = FetchType.EAGER)
     private Set<Review> reviews;
 
-    @OneToMany(mappedBy = "product")
-    Set<OrderContent> orderContents;
+    @ManyToMany(mappedBy = "productSet", fetch = FetchType.EAGER)
+    private Set<ProductOption> productOptions;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
+    private Set<OrderContent> orderContents;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @JoinTable(name="content_map", joinColumns=@JoinColumn(name="product_id", referencedColumnName = "id"))

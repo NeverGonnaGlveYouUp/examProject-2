@@ -1,4 +1,4 @@
-package ru.tusur.ShaurmaWebSiteProject.ui.components;
+package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.html.Div;
 

@@ -4,7 +4,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.orderedlayout.Scroller;
@@ -15,9 +14,7 @@ import com.vaadin.flow.dom.Style;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
-import ru.tusur.ShaurmaWebSiteProject.ui.adminPamel.AdminPanelGrid;
-
-import java.util.Collection;
+import ru.tusur.ShaurmaWebSiteProject.ui.templates.AdminPanelGrid;
 import java.util.Set;
 import java.util.stream.Collectors;
 

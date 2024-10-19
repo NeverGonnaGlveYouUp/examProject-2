@@ -1,4 +1,4 @@
-package ru.tusur.ShaurmaWebSiteProject.ui.adminPamel;
+package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dialog.Dialog;
@@ -13,13 +13,11 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import lombok.Getter;
 import lombok.Setter;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
-import ru.tusur.ShaurmaWebSiteProject.ui.components.MainPageProductRepresentation;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.Dialogs;
 
 @Setter

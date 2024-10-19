@@ -1,5 +1,11 @@
 :host {
+    --vaadin-app-layout-navbar-offset-bottom: 0px;
     --vaadin-app-layout-drawer-offset-size: 200px;
+}
+
+vaadin-app-layout::part(navbar) {
+    height: var(--lumo-size-xl);
+    box-shadow: var(--lumo-box-shadow-s);
 }
 
 [part="drawer"] {

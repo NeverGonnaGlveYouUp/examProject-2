@@ -9,7 +9,8 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.cache.annotation.EnableCaching;
 
 @SpringBootApplication(exclude =  ErrorMvcAutoConfiguration.class)
-@Theme("my_theme")
+//@Theme("my_theme")
+@Theme("vaadin+")
 @EnableCaching
 public class ShaurmaWebSiteProjectApplication extends SpringBootServletInitializer implements AppShellConfigurator {
 	public static void main(String[] args) {

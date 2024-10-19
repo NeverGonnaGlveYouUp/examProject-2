@@ -16,14 +16,13 @@ import jakarta.annotation.security.RolesAllowed;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
-import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.Header;
 
 import java.util.Optional;
 
 @RolesAllowed(value = {Roles.USER, Roles.ADMIN})
 @PageTitle("Профиль - Главная")
 @Route(value = "main", layout = UserProfilePrefix.class)
-public class UserProfileMain extends VerticalLayout implements Header {
+public class UserProfileMain extends VerticalLayout {
     public final static String name = "Главная";
     UserDetails userDetails;
 
@@ -38,7 +37,7 @@ public class UserProfileMain extends VerticalLayout implements Header {
         Div div = new Div();
         HorizontalLayout horizontalLayout = new HorizontalLayout();
         VerticalLayout verticalLayout = new VerticalLayout();
-        Div avatar = setupAvatar(userDetails.getUsername(), userDetails.getAvatarUrl());
+//        Div avatar = setupAvatar(userDetails.getUsername(), userDetails.getAvatarUrl());
         Span span1 = new Span(Optional.of(userDetails.getUsername()).orElse("username - not present"));
         Span span2 = new Span("email: " + Optional.of(userDetails.getEmail()).orElse("email - not present"));
         Icon icon = new Icon(VaadinIcon.ANGLE_RIGHT);
@@ -49,7 +48,8 @@ public class UserProfileMain extends VerticalLayout implements Header {
 
         horizontalLayout.addClassNames(LumoUtility.FlexWrap.WRAP, LumoUtility.AlignSelf.BASELINE);
         horizontalLayout.addClickListener(event -> UI.getCurrent().navigate(UserProfileDetails.class));
-        horizontalLayout.add(avatar, verticalLayout, icon);
+//        horizontalLayout.add(avatar, verticalLayout, icon);
+        horizontalLayout.add(verticalLayout, icon);
         horizontalLayout.getStyle()
                 .setPaddingLeft("16px")
                 .setPaddingRight("16px")

@@ -27,8 +27,11 @@ public class ProductOption {
     private Integer mass;
 
     @NotNull
-    private BigDecimal prise;
+    private BigDecimal price;
 
     @ManyToMany
+    @JoinTable(
+            joinColumns = @JoinColumn(name = "product_option_id"),
+            inverseJoinColumns = @JoinColumn(name = "product_id"))
     private Set<Product> productSet;
 }

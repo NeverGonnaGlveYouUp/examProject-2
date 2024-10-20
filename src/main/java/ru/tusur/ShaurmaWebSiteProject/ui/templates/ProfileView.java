@@ -23,9 +23,9 @@ import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.Breakpoint;
 
-@PageTitle("Profile")
+@PageTitle("Профиль")
 @RolesAllowed(value = {Roles.ADMIN, Roles.USER})
-@Route(value = "profile", layout = MainLayout.class)
+@Route(value = "Профиль", layout = MainLayout.class)
 public class ProfileView extends Main {
     private final SecurityService securityService;
 
@@ -161,10 +161,10 @@ public class ProfileView extends Main {
 
     public Component createLinks() {
         UnorderedList list = new UnorderedList(
-                new ListItem(new Anchor("profile#public-information", "Public information")),
-                new ListItem(new Anchor("profile#contact-information", "Contact information")),
-                new ListItem(new Anchor("profile#password", "Password")),
-                new ListItem(new Anchor("profile#notifications", "Notifications"))
+                new ListItem(new Anchor("Профиль#public-information", "Public information")),
+                new ListItem(new Anchor("Профиль#contact-information", "Contact information")),
+                new ListItem(new Anchor("Профиль#password", "Password")),
+                new ListItem(new Anchor("Профиль#notifications", "Notifications"))
         );
         list.addClassNames(Margin.Vertical.XLARGE, Padding.Horizontal.LARGE);
 

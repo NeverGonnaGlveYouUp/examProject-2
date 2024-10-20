@@ -2,15 +2,17 @@ package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
 import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.combobox.MultiSelectComboBox;
-import com.vaadin.flow.component.html.*;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
+import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
@@ -21,6 +23,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.Review;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
@@ -28,16 +31,15 @@ import ru.tusur.ShaurmaWebSiteProject.ui.components.Badge;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.LazyContainer;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.PriceRange;
-import ru.tusur.ShaurmaWebSiteProject.ui.dialogs.NativeDialog;
 import ru.tusur.ShaurmaWebSiteProject.ui.list.MyComponentList;
 import ru.tusur.ShaurmaWebSiteProject.ui.list.ProductListItem;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.LazyPlaceholder;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
-import ru.tusur.ShaurmaWebSiteProject.ui.themes.RadioButtonTheme;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.BadgeVariant;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 @AnonymousAllowed
 @Route(value = "Главная", layout = MainLayout.class)
@@ -153,35 +155,18 @@ public class MainProductView extends Main implements LazyPlaceholder {
         MultiSelectComboBox<Object> brands = new MultiSelectComboBox<>();
         brands.addClassNames(LumoUtility.Display.HIDDEN, "lg:inline-flex", LumoUtility.MinWidth.NONE);
         brands.setAriaLabel("Brands");
-        brands.setItems(new String[]{"LuxeLiving"}, new String[]{"DecoHaven"}, new String[]{"CasaCharm"}, new String[]{"HomelyCraft"}, new String[]{"ArtisanHaus"});
+        brands.setItems(); //todo populate with branches
         brands.setPlaceholder("Brands");
-
-        Button price = new Button("Price");
-        price.addClassNames(LumoUtility.Display.HIDDEN, "lg:inline-block");
-        price.setIcon(new Icon("lumo", "angle-down"));
-        price.setIconAfterText(true);
 
         PriceRange priceRange = new PriceRange("Price");
         priceRange.addClassNames(LumoUtility.Margin.SMALL, LumoUtility.Padding.Top.XSMALL);
         priceRange.setWidth(16, Unit.REM);
 
-        NativeDialog priceDialog = new NativeDialog(priceRange);
-        priceDialog.setRight(8, Unit.REM);
-        priceDialog.setTop(7.5f, Unit.REM);
-        price.addClickListener(e -> priceDialog.showModal());
-
         // TODO: a11y improvements, opened/closed states
         Button filters = new Button("Filters", LineAwesomeIcon.SLIDERS_H_SOLID.create());
         filters.addClickListener(e -> toggleSidebar());
 
-        RadioButtonGroup<String> mode = new RadioButtonGroup<>();
-        mode.setAriaLabel("View mode");
-        mode.setItems("Grid", "List");
-        mode.setRenderer(new ComponentRenderer<>(this::renderIconWithAriaLabel));
-        mode.setValue("Grid");
-        setRadioButtonGroupTheme(mode, RadioButtonTheme.TOGGLE);
-
-        Layout toolbar = new Layout(search, brands, price, priceDialog, filters, mode);
+        Layout toolbar = new Layout(search, brands, filters);
         toolbar.addClassNames(LumoUtility.Border.BOTTOM, LumoUtility.Padding.Horizontal.LARGE, LumoUtility.Padding.Vertical.SMALL);
         toolbar.setAlignItems(Layout.AlignItems.CENTER);
         toolbar.setGap(Layout.Gap.MEDIUM);
@@ -216,14 +201,6 @@ public class MainProductView extends Main implements LazyPlaceholder {
         this.sidebar.removeClassName("start-0");
     }
 
-    private Component renderIconWithAriaLabel(String item) {
-        Component icon = item.equals("Grid") ?
-                LineAwesomeIcon.TH_SOLID.create() :
-                LineAwesomeIcon.LIST_SOLID.create();
-        icon.getElement().setAttribute("aria-label", item);
-        return icon;
-    }
-
     private Button createIconButton(LineAwesomeIcon icon, String label) {
         Button button = new Button(icon.create());
         button.addThemeVariants(ButtonVariant.LUMO_ERROR, ButtonVariant.LUMO_TERTIARY);
@@ -232,30 +209,41 @@ public class MainProductView extends Main implements LazyPlaceholder {
         return button;
     }
 
-    private void setRadioButtonGroupTheme(RadioButtonGroup group, String... themeNames) {
-        group.addThemeNames(themeNames);
-        group.getChildren().forEach(component -> {
-            for (String themeName : themeNames) {
-                component.getElement().getThemeList().add(themeName);
-            }
-        });
-    }
-
     private Layout createContent() {
         List<ProductTypeEntity> allProductTypeEntities = productTypeEntityRepo.findAll();
-        MyComponentList list = new MyComponentList();
+
         Layout content = new Layout(createToolbar());
         content.addClassNames(LumoUtility.Flex.GROW);
         content.setFlexDirection(Layout.FlexDirection.COLUMN);
         content.setOverflow(Layout.Overflow.HIDDEN);
+
+        MyComponentList list = new MyComponentList();
         list.setAutoFill(220, Unit.PIXELS);
         list.setOverflow(Layout.Overflow.AUTO);
 
+
         allProductTypeEntities.forEach(productType -> {
-            H3 title = new H3(productType.getName());
             List<Product> products = productService.findByProductTypeOrderByRankAsc(productType);
+            Set<Review> reviews;
+            H3 title = new H3(productType.getName());
             list.add(title);
             for (Product product : products) {
+                reviews = product.getReviews();
+
+                int stars = reviews.stream().mapToInt(Review::getGrade).sum();
+                double dCount = stars / (double) reviews.size();
+                String count = String.valueOf(Double.isNaN(dCount) ? 0 : (int) dCount);
+
+                Span span = new Span();
+                span.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Display.FLEX, LumoUtility.Gap.SMALL);
+                span.getElement().setAttribute("aria-hidden", "true");
+
+                Badge badge = new Badge();
+                badge.addThemeVariants(BadgeVariant.CONTRAST, BadgeVariant.SMALL, BadgeVariant.PILL);
+                badge.setText(count);
+                span.add(getStars(stars), badge);
+
+
                 list.add(
                         new LazyContainer<>(
                                 lazyPlaceholder(),
@@ -267,8 +255,10 @@ public class MainProductView extends Main implements LazyPlaceholder {
                                                 product.getName(),
                                                 product.getName(),
                                                 product.getPrice().toString(),
+                                                span,
                                                 createIconButton(LineAwesomeIcon.HEART, "Избранное")
                                         );
+                                        productListItem.addClickListener(event -> UI.getCurrent().navigate(ProductDetailsView.class, product.getName()));
                                         div.add(productListItem);
                                     });
                                 })

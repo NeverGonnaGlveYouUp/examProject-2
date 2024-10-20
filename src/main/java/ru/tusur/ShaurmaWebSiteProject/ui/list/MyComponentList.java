@@ -29,7 +29,7 @@ public class MyComponentList extends com.vaadin.flow.component.html.UnorderedLis
      * Sets auto-sizing for grid columns with a minimum width for each column.
      */
     public void setAutoFill(float width, Unit unit) {
-        getStyle().set("grid-template-columns", "repeat(4, minmax(" + width + unit.toString() + ", 1fr))");
+        getStyle().set("grid-template-columns", "repeat(auto-fill, minmax(" + width + unit.toString() + ", 1fr))");
 //        getStyle().set("grid-template-columns", "repeat(auto-fit, minmax(" + width + unit.toString() + ", 1fr))");
     }
 

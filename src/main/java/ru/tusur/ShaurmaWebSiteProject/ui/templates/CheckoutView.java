@@ -30,8 +30,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 @AnonymousAllowed
-@PageTitle("Checkout")
-@Route(value = "checkout", layout = MainLayout.class)
+@PageTitle("Оплата")
+@Route(value = "Оплата", layout = MainLayout.class)
 public class CheckoutView extends Main {
 
     public CheckoutView() {

@@ -11,6 +11,7 @@ public class BreadcrumbItem extends ListItem implements AfterNavigationObserver 
 
     private RouterLink link;
 
+
     public BreadcrumbItem(RouterLink link) {
         addClassNames(Display.FLEX);
 

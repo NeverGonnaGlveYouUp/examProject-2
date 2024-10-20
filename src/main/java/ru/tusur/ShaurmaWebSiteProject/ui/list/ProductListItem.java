@@ -3,6 +3,7 @@ package ru.tusur.ShaurmaWebSiteProject.ui.list;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
@@ -21,20 +22,21 @@ public class ProductListItem extends com.vaadin.flow.component.html.ListItem {
     private Layout column;
     private Layout primary;
     private Layout secondary;
+    private Layout third;
     private Layout actions;
 
-    public ProductListItem(String src, String alt, String primary, String secondary, Component... actions) {
+    public ProductListItem(String src, String alt, String primary, String secondary, Span third, Component... actions) {
         this(new Image(new StreamResource(FilenameUtils.getName(src), (InputStreamFactory) () -> {
             try {
                 return new DataInputStream(new FileInputStream(src));
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        }), alt), new Text(primary), new Text(secondary), actions);
+        }), alt), new Text(primary), new Text(secondary), third, actions);
     }
 
 
-    public ProductListItem(Image image, Component primary, Component secondary, Component... actions) {
+    public ProductListItem(Image image, Component primary, Component secondary, Component third, Component... actions) {
         addClassNames(Background.BASE, Border.BOTTOM, Border.RIGHT, Display.FLEX, FlexDirection.COLUMN, Gap.MEDIUM,
                 Padding.Bottom.MEDIUM, Padding.Horizontal.LARGE, Padding.Top.LARGE);
 
@@ -53,7 +55,11 @@ public class ProductListItem extends com.vaadin.flow.component.html.ListItem {
         this.secondary.addClassNames(FontWeight.BOLD);
         setSecondary(secondary);
 
-        this.column = new Layout(this.primary, this.secondary);
+        this.third = new Layout();
+        this.third.addClassNames(FontWeight.BOLD);
+        setThird(third);
+
+        this.column = new Layout(this.primary, this.secondary, this.third);
         this.column.setFlexDirection(Layout.FlexDirection.COLUMN);
         this.column.setFlexGrow();
 
@@ -105,6 +111,18 @@ public class ProductListItem extends com.vaadin.flow.component.html.ListItem {
             }
         }
         this.secondary.setVisible(this.secondary.getComponentCount() > 0);
+    }
+
+    public void setThird(Component... components) {
+        this.third.removeAll();
+        if (components != null) {
+            for (Component component : components) {
+                if (component != null) {
+                    this.third.add(component);
+                }
+            }
+        }
+        this.third.setVisible(this.third.getComponentCount() > 0);
     }
 
     /**

@@ -23,8 +23,8 @@ import ru.tusur.ShaurmaWebSiteProject.ui.themes.ButtonTheme;
 import ru.tusur.ShaurmaWebSiteProject.ui.themes.InputTheme;
 
 @AnonymousAllowed
-@PageTitle("Shopping cart")
-@Route(value = "shopping-cart", layout = MainLayout.class)
+@PageTitle("Карзина")
+@Route(value = "Карзина", layout = MainLayout.class)
 public class ShoppingCartView extends Main {
 
     public ShoppingCartView() {

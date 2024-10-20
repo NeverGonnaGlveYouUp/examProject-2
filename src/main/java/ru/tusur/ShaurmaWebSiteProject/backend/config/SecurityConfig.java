@@ -73,7 +73,7 @@ class SecurityConfig extends VaadinWebSecurity {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth ->
-                auth.requestMatchers(antMatchers("/")).permitAll()
+                auth.requestMatchers(antMatchers("/", "/icons/**", "/line-awesome/**", "/components/**")).permitAll()
         );
 
         super.configure(http);

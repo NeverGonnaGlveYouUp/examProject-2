@@ -47,7 +47,6 @@ public class MainLayout extends AppLayout {
     protected MainLayout(SecurityService securityService) {
         this.securityService = securityService;
         userDetails = securityService.getAuthenticatedUser();
-        addClassNames(LumoUtility.Display.FLEX, LumoUtility.Width.FULL);
         addHeaderContent();
         addDrawerContent();
     }

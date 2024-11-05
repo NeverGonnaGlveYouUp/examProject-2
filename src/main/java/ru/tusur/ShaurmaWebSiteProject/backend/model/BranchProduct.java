@@ -28,4 +28,14 @@ public class BranchProduct {
     Branch branch;
 
     boolean hide;
+
+    @Override
+    public String toString() {
+        return "BranchProduct{" +
+                "branch=" + branch +
+                ", id=" + id +
+                ", product=" + product +
+                ", hide=" + hide +
+                '}';
+    }
 }

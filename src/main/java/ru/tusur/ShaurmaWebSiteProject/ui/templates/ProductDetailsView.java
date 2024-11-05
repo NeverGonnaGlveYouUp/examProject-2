@@ -1,9 +1,13 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.checkbox.CheckboxGroupVariant;
 import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.details.DetailsVariant;
 import com.vaadin.flow.component.html.*;
@@ -15,40 +19,45 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
 import org.vaadin.lineawesome.LineAwesomeIcon;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductOption;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.Review;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.LikesRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Breadcrumb;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.BreadcrumbItem;
+import ru.tusur.ShaurmaWebSiteProject.ui.components.Checkboxes;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
+import ru.tusur.ShaurmaWebSiteProject.ui.list.ProductReviewListItem;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.HomeView;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
+import ru.tusur.ShaurmaWebSiteProject.ui.themes.CheckboxTheme;
 import ru.tusur.ShaurmaWebSiteProject.ui.themes.RadioButtonTheme;
 
+import java.util.Set;
+
+import static ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils.getImageResource;
+
 @AnonymousAllowed
-@Route(value = "подробно", layout = MainLayout.class)
+@Route(value = "Подробно", layout = MainLayout.class)
 public class ProductDetailsView extends Main implements HasUrlParameter<String>, HasDynamicTitle {
-
-    private String img1 = "https://images.unsplash.com/photo-1507668077129-56e32842fceb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400";
-    private String alt1 = "Clear glass bulb on human palm ⋅ Rohan Makhecha ⋅ Unsplash";
-
-    private String img2 = "https://images.unsplash.com/photo-1520532622976-1bdf3b7a5af9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100";
-    private String alt2 = "Clear glass light bulb on sand during daytime ⋅ Glen Carrie ⋅ Unsplash";
-
-    private String img3 = "https://images.unsplash.com/photo-1567177662154-dfeb4c93b6ae?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100";
-    private String alt3 = "Selective focus photography of light bulb ⋅ Ameen Fahmy ⋅ Unsplash";
-
-    private String img4 = "https://images.unsplash.com/photo-1573621622238-f7ac6ac0429a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=100";
-    private String alt4 = "Hanging black and clear light bulb turned on ⋅ Jonathan Borba ⋅ Unsplash";
-
     private String productName;
+    private final ProductRepo productRepo;
+    private final LikesRepo likesRepo;
+    private Product product;
+    private final UserDetails userDetails;
 
-    public ProductDetailsView() {
+    public ProductDetailsView(ProductRepo productRepo, SecurityService securityService, LikesRepo likesRepo) {
+        this.productRepo = productRepo;
+        this.likesRepo = likesRepo;
+        this.userDetails = securityService.getAuthenticatedUser();
         addClassNames(Display.FLEX, FlexWrap.WRAP_REVERSE, JustifyContent.CENTER);
     }
 
-    public Component createImages() {
-        Layout images = new Layout(
-                createPreview(),
-                createThumbnails()
-        );
+    public Component createImage() {
+        Layout images = new Layout(new Image(getImageResource(product.getPreviewUrl()), productName));
         images.addClassNames(Padding.LARGE);
         images.setAlignSelf(Layout.AlignSelf.END);
         images.setBoxSizing(Layout.BoxSizing.BORDER);
@@ -58,42 +67,16 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         return images;
     }
 
-    public Component createPreview() {
-        Image img = new Image(this.img1, this.alt1);
-        img.setWidthFull();
-
-        Layout preview = new Layout(img);
-        preview.addClassNames("aspect-square", BorderRadius.LARGE, BoxShadow.SMALL);
-        preview.setAlignItems(Layout.AlignItems.CENTER);
-        preview.setJustifyContent(Layout.JustifyContent.CENTER);
-        preview.setOverflow(Layout.Overflow.HIDDEN);
-        preview.setWidthFull();
-        return preview;
-    }
-
-    public Component createThumbnails() {
-        // TODO: Accessibility, use tabs or radio buttons
-        Layout thumbnails = new Layout(
-                createThumbnail(this.img1, this.alt1),
-                createThumbnail(this.img2, this.alt2),
-                createThumbnail(this.img3, this.alt3),
-                createThumbnail(this.img4, this.alt4)
-        );
-        thumbnails.setColumns(Layout.GridColumns.COLUMNS_4);
-        thumbnails.setDisplay(Layout.Display.GRID);
-        thumbnails.setGap(Layout.Gap.MEDIUM);
-        return thumbnails;
-    }
-
-    public Component createThumbnail(String src, String alt) {
-        Image img = new Image(src, alt);
-        img.setWidthFull();
-
-        Layout thumbnail = new Layout(img);
-        thumbnail.addClassNames("aspect-square", BorderRadius.LARGE, BoxShadow.SMALL, Overflow.HIDDEN);
-        thumbnail.setAlignItems(Layout.AlignItems.CENTER);
-        thumbnail.setJustifyContent(Layout.JustifyContent.CENTER);
-        return thumbnail;
+    private Text getStars(int stars) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            if (i < stars) {
+                builder.append(createStar());
+            } else if (stars - i < 1 && stars - i > 0){
+                builder.append(createHalfStar());
+            }
+        }
+        return new Text(builder.toString());
     }
 
     public Component createInformation() {
@@ -106,73 +89,51 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         );
         breadcrumb.addClassNames(Margin.Bottom.XSMALL);
 
-        Span stars = new Span("4.5 stars");
-        stars.addClassNames(FontSize.SMALL, Margin.Start.XSMALL);
 
-        Layout rating = new Layout(createStar(), createStar(), createStar(), createStar(), createHalfStar());
+        int stars = product.getReviews().stream().mapToInt(Review::getGrade).sum();
+        double dCount = stars / (double) product.getReviews().size();
+        String count = String.valueOf(Double.isNaN(dCount) ? 0 : (int) dCount);
+
+        Span starsText = new Span(count + " звезд");
+        starsText.addClassNames(FontSize.SMALL, Margin.Start.XSMALL);
+
+        Layout rating = new Layout(getStars(stars));
         rating.addClassNames(TextColor.PRIMARY);
 
-        Button review = new Button("Write a review");
+        Button review = new Button("Оставить отзыв", e -> {
+            UI.getCurrent().navigate("Подробно/" + getPageTitle() + "#Отзывы");
+        });
         review.addClassNames(Margin.Vertical.NONE);
         review.addThemeVariants(ButtonVariant.LUMO_SMALL, ButtonVariant.LUMO_TERTIARY);
+        if(userDetails==null){
+            review.setText("Отзывы");
+        }
 
-        Layout reviewLayout = new Layout(rating, stars, review);
+        Layout reviewLayout = new Layout(rating, starsText, review);
         reviewLayout.addClassNames(Margin.Bottom.XSMALL, Margin.Top.MEDIUM);
         reviewLayout.setAlignItems(Layout.AlignItems.CENTER);
         reviewLayout.setGap(Layout.Gap.SMALL);
 
-        H2 title = new H2("Xyloflux");
+        H2 title = new H2(productName);
         title.addClassNames(FontSize.XLARGE, Margin.Bottom.XSMALL, Margin.Top.MEDIUM);
 
-        Span price = new Span("420,00 €");
+        Span price = new Span(product.getPrice() + " ₽");
         price.addClassNames(FontWeight.BOLD, Margin.Bottom.XSMALL, Margin.Top.NONE);
 
-        Paragraph description = new Paragraph("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do " +
-                "eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+        Paragraph description = new Paragraph(product.getDescription());
         description.addClassNames(Margin.Bottom.LARGE, Margin.Top.MEDIUM);
 
-        RadioButtonGroup<String> color = new RadioButtonGroup("Color scheme");
-        color.setItems("Light", "Dark");
-        color.setRenderer(new ComponentRenderer<>(item -> {
-            if (item.equals("Light")) {
-                return renderLabelWithDescription(item, "Minimalist and modern look, focused on readability " +
-                        "and a soothing visual experience");
-            } else {
-                return renderLabelWithDescription(item, "Dramatic and immersive visual style, reduces eye " +
-                        "strain in low-light environments");
-            }
-        }));
-        setRadioButtonGroupTheme(color, RadioButtonTheme.EQUAL_WIDTH, RadioButtonTheme.GAP, RadioButtonTheme.TOGGLE);
+        Set<ProductOption> productOptions = product.getProductOptions();
+        String[] labels = productOptions.stream().map(ProductOption::getName).toArray(String[]::new);
+        String[] descriptions = productOptions.stream().map(productOption -> productOption.getMass() + "г +" + productOption.getPrice() + " ₽").toArray(String[]::new);
+        CheckboxGroup<String> options = new Checkboxes("Добавки", labels, descriptions, CheckboxTheme.DIVIDERS, CheckboxTheme.ALIGN_RIGHT);
 
-        RadioButtonGroup<String> intensity = new RadioButtonGroup("Sound intensity");
-        intensity.setItems("Low", "High");
-        intensity.setRenderer(new ComponentRenderer<>(item -> {
-            if (item.equals("Low")) {
-                return renderLabelWithDescription(item, "Creates soft and mellow sounds");
-            } else {
-                return renderLabelWithDescription(item, "Produces vibrant and energetic tones");
-            }
-        }));
-        setRadioButtonGroupTheme(intensity, RadioButtonTheme.EQUAL_WIDTH, RadioButtonTheme.GAP, RadioButtonTheme.TOGGLE);
-
-        RadioButtonGroup<String> effects = new RadioButtonGroup("Lighting effects");
-        effects.setItems("Solid", "Transitional");
-        effects.setRenderer(new ComponentRenderer<>(item -> {
-            if (item.equals("Solid")) {
-                return renderLabelWithDescription(item, "Choose from a range of solid colors to illuminate the " +
-                        "xylophone keys");
-            } else {
-                return renderLabelWithDescription(item, "Enjoy smooth color transitions that create a " +
-                        "mesmerizing visual display");
-            }
-        }));
-        setRadioButtonGroupTheme(effects, RadioButtonTheme.EQUAL_WIDTH, RadioButtonTheme.GAP, RadioButtonTheme.TOGGLE);
-
-        IntegerField quantity = new IntegerField("Quantity");
+        IntegerField quantity = new IntegerField("Количество");
         quantity.setStepButtonsVisible(true);
+        quantity.setMin(1);
         quantity.setValue(1);
 
-        Button add = new Button("Add to cart");
+        Button add = new Button("В корзину");
         add.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         Layout quantityLayout = new Layout(quantity, add);
@@ -181,26 +142,16 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         quantityLayout.setDisplay(Layout.Display.GRID);
         quantityLayout.setGap(Layout.Gap.SMALL);
 
-        Details settings = createDetails("Performance settings", "Users can customize the performance " +
-                "settings of Xyloflux to optimize its speed and responsiveness. They can adjust parameters such as " +
-                "animation smoothness, transition effects, and rendering quality based on their device capabilities " +
-                "and preferences.");
+        H3 reviewsTitle = new H3("Отзывы");
+        reviewsTitle.addClassNames(FontSize.SMALL, Margin.Top.SMALL);
+        reviewsTitle.setId(reviewsTitle.getText().replace(" ", "-").toLowerCase());
+        Layout reviews = new Layout();
+        reviews.addClassNames(Border.BOTTOM, Margin.Bottom.MEDIUM, Margin.Top.LARGE);
+        reviews.setFlexDirection(Layout.FlexDirection.COLUMN);
+        reviews.add(reviewsTitle);
+        product.getReviews().forEach(reviewObj -> reviews.add(new ProductReviewListItem(userDetails, reviewObj, likesRepo)));
 
-        Details customization = createDetails("Theme customization", "Xyloflux offers extensive theme " +
-                "customization options, allowing users to personalize the visual appearance of the product. Users " +
-                "can choose from a variety of color schemes, font styles, and layout options to create a unique and " +
-                "tailored experience.");
-
-        Details collaboration = createDetails("Collaboration tools", "Xyloflux offers built-in " +
-                "collaboration tools to facilitate teamwork and communication. Users can invite team members, assign " +
-                "tasks, share files, and track project progress directly within the platform.");
-
-        Layout details = new Layout(settings, customization, collaboration);
-        details.addClassNames(Border.BOTTOM, Margin.Bottom.MEDIUM, Margin.Top.LARGE);
-        details.setFlexDirection(Layout.FlexDirection.COLUMN);
-
-        Layout layout = new Layout(breadcrumb, title, price, reviewLayout, description, color, intensity, effects,
-                details, quantityLayout);
+        Layout layout = new Layout(breadcrumb, title, price, reviewLayout, description, quantityLayout, options, reviews);
         layout.addClassNames(BoxSizing.BORDER, MaxWidth.SCREEN_SMALL, Padding.LARGE);
         layout.setBoxSizing(Layout.BoxSizing.BORDER);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
@@ -257,7 +208,8 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
     @Override
     public void setParameter(BeforeEvent event, String parameter) {
         this.productName = parameter;
-        add(createInformation(), createImages());
+        this.product = productRepo.findByName(parameter).orElseThrow(NotFoundException::new);
+        add(createInformation(), createImage());
     }
 
     @Override

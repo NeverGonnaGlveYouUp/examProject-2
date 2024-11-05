@@ -22,9 +22,10 @@ public class Likes {
     @JoinColumn(name="review_id", nullable=false)
     private Review review;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "user_details_id", referencedColumnName = "id")
     private UserDetails userDetails;
 
-    boolean likes;
+    @Enumerated(EnumType.STRING)
+    private LikeState likes;
 }

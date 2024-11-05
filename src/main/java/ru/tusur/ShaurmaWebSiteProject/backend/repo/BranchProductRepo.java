@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface BranchProductRepo extends JpaRepository<BranchProduct, Long>, CustomBranchProductRepo {
+public interface BranchProductRepo extends JpaRepository<BranchProduct, Long> {
 
     Optional<BranchProduct> findTopByOrderByIdDesc();
 

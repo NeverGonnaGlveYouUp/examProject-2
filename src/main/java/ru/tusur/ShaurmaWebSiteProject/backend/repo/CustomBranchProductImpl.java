@@ -2,48 +2,74 @@ package ru.tusur.ShaurmaWebSiteProject.backend.repo;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
-import jakarta.persistence.criteria.*;
+import org.hibernate.annotations.NotFound;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Branch;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.BranchProduct;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class CustomBranchProductImpl implements CustomBranchProductRepo{
+@Component
+public class CustomBranchProductImpl implements CustomBranchProductRepository {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    @Autowired
+    ProductRepo productRepo;
+    @Autowired
+    BranchRepo branchRepo;
+
     @Override
-    public Long countByBranch(Branch branch){
-        String jpql = "SELECT COUNT(bp) FROM BranchProduct bp WHERE bp.branch = :branch";
-        TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
-        query.setParameter("branch", branch.getId());
+    public Long countByBranch(Long b_id) {
+        TypedQuery<Long> query = entityManager.createQuery("SELECT COUNT(bp) FROM BranchProduct bp WHERE bp.branch = :branch", Long.class);
+        query.setParameter("branch", b_id);
         return query.getSingleResult();
     }
 
-//    public List<BranchProduct> findAllasdByBranch(Branch branch, ProductTypeEntity productType) {
-//        int pageNumber = 1;
-//        int pageSize = 4;
-//        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
-//
-//        CriteriaQuery<BranchProduct> branchProductCriteriaQuery = criteriaBuilder.createQuery(BranchProduct.class);
-//        Root<BranchProduct> fromBranchProducts = branchProductCriteriaQuery.from(BranchProduct.class);
-//        Join<BranchProduct, Product> products = fromBranchProducts.join("products");
-//        List<Predicate> conditions = new ArrayList<>();
-//        conditions.add(criteriaBuilder.equal(fromBranchProducts.get("branch"), branch));
-//        conditions.add(criteriaBuilder.isFalse(fromBranchProducts.get("hide")));
-//        conditions.add(criteriaBuilder.equal(products.get("productTypeEntity"), productType));
-//
-//        TypedQuery<BranchProduct> typedQuery = entityManager.createQuery(branchProductCriteriaQuery
-//                .select(fromBranchProducts)
-//                .where(conditions.toArray(new Predicate[] {}))
-//                .orderBy(criteriaBuilder.asc(fromBranchProducts.get("rack")))
-//                .distinct(true));
-//
-//        return typedQuery.getResultList();
-//    }
+    @Override
+    public List<BranchProduct> getAll() {
+        String jpql = "SELECT bp FROM BranchProduct bp";
+        TypedQuery<BranchProduct> query = entityManager.createQuery(jpql, BranchProduct.class);
+        return query.getResultList();
+    }
+
+    @Override
+    public BranchProduct getOne(Long b_id, Long p_id) {
+        TypedQuery<BranchProduct> query = entityManager.createQuery("SELECT bp FROM BranchProduct bp WHERE bp.branch = :branch_id AND bp.product = :product_id", BranchProduct.class);
+        query.setParameter("branch_id", branchRepo.findById(b_id).orElseThrow());
+        query.setParameter("product_id", productRepo.findById(p_id).orElseThrow());
+        return query.getSingleResult();
+    }
+
+    @Override
+    public void create(boolean b, Long b_id, Long p_id) {
+        Query query = entityManager.createQuery("INSERT INTO BranchProduct bp (hide, branch_id, product_id) VALUES(:hide, :branch_id, :product_id)");
+        query.setParameter("hide", b);
+        query.setParameter("branch_id", branchRepo.findById(b_id).orElseThrow());
+        query.setParameter("product_id", productRepo.findById(p_id).orElseThrow());
+        query.executeUpdate();
+    }
+
+    @Override
+    public void update(boolean b, Long b_id, Long p_id) {
+        Query query = entityManager.createQuery("UPDATE BranchProduct bp SET bp.hide= :hide WHERE bp.branch=:branch_id AND bp.product=:product_id");
+        query.setParameter("hide", b);
+        query.setParameter("branch_id", branchRepo.findById(b_id).orElseThrow());
+        query.setParameter("product_id", productRepo.findById(p_id).orElseThrow());
+        query.executeUpdate();
+    }
+
+    @Override
+    public void delete(Long b_id, Long p_id) {
+        Query query = entityManager.createQuery("DELETE FROM BranchProduct bp WHERE bp.branch=:branch_id AND bp.product=:product_id");
+        query.setParameter("branch_id", branchRepo.findById(b_id).orElseThrow());
+        query.setParameter("product_id", productRepo.findById(p_id).orElseThrow());
+        query.executeUpdate();
+    }
+
+
 }

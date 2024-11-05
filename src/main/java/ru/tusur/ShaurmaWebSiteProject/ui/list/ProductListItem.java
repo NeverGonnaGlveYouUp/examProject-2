@@ -4,15 +4,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.server.InputStreamFactory;
-import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
-import org.apache.commons.io.FilenameUtils;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import static ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils.getImageResource;
 
 public class ProductListItem extends com.vaadin.flow.component.html.ListItem {
 
@@ -26,13 +21,7 @@ public class ProductListItem extends com.vaadin.flow.component.html.ListItem {
     private Layout actions;
 
     public ProductListItem(String src, String alt, String primary, String secondary, Span third, Component... actions) {
-        this(new Image(new StreamResource(FilenameUtils.getName(src), (InputStreamFactory) () -> {
-            try {
-                return new DataInputStream(new FileInputStream(src));
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            }
-        }), alt), new Text(primary), new Text(secondary), third, actions);
+        this(new Image(getImageResource(src), alt), new Text(primary), new Text(secondary), third, actions);
     }
 
 

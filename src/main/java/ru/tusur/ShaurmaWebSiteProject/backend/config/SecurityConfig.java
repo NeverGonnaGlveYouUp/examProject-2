@@ -1,6 +1,7 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.config;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import org.apache.catalina.util.ResourceSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +11,6 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.DelegatingPasswordEncoder;
@@ -20,9 +20,7 @@ import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 
 @EnableWebSecurity
 @Configuration
@@ -56,11 +54,19 @@ class SecurityConfig extends VaadinWebSecurity {
     BranchRepo branchRepo;
 
     @Autowired
+    ReviewRepo reviewRepo;
+
+    @Autowired
+    LikesRepo likesRepo;
+
+    @Autowired
     DelegatingPasswordEncoder delegatingPasswordEncoder;
 
 //    get jwt key
     @Value("${jwt.auth.secret}")
     private String authSecret;
+
+    private final Random random = new Random();
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -90,6 +96,13 @@ class SecurityConfig extends VaadinWebSecurity {
         userDetails.setTransientPassword("admin@admin.admin");
         userDetails.setUsername("admin@admin.admin");
         customUserDetailsService.store(userDetails);
+
+        UserDetails userDetails1 = new UserDetails();
+        userDetails1.setRole(Roles.ADMIN);
+        userDetails1.setEmail("admin1@admin1.admin");
+        userDetails1.setTransientPassword("admin1@admin1.admin");
+        userDetails1.setUsername("admin1@admin1.admin");
+        customUserDetailsService.store(userDetails1);
 
         ProductTypeEntity productType = new ProductTypeEntity();
         productType.setName("Шаурма");
@@ -121,14 +134,37 @@ class SecurityConfig extends VaadinWebSecurity {
         branchRepo.save(branch2);
 
         for (int i = 0; i < 10; i++) {
-
             Product product = new Product();
             product.setName("Шаверма из кота V" + i);
             product.setPrice(new BigDecimal("350.99"));
             product.setPreviewUrl("src/main/resources/META-INF/resources/images/img.png");
             product.setRank(i);
             product.setProductType(productType);
-            product.setDescription("rrr");
+            product.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+            productRepo.save(product);
+            HashSet<Review> reviews = new HashSet<>();
+            for (int j = 0; j < 7; j++) {
+                Review review = new Review();
+                review.setBranch(j%2==0?branch:branch1);
+                review.setProduct(product);
+                review.setGrade(random.nextInt(5));
+                review.setUserDetails(j%2==0?userDetails:userDetails1);
+                review.setContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
+                reviews.add(review);
+                reviewRepo.save(review);
+                HashSet<Likes> likesHashSet = new HashSet<>();
+                for (int k = 0; k <= 1; k++) {
+                    Likes likes = new Likes();
+                    likes.setLikes(k%5==0?LikeState.DISLIKE:LikeState.LIKE);
+                    likes.setReview(review);
+                    likes.setUserDetails(k==1?userDetails:userDetails1);
+                    likesHashSet.add(likes);
+                    likesRepo.save(likes);
+                }
+                review.setLikes(likesHashSet);
+                reviewRepo.save(review);
+            }
+            product.setReviews(reviews);
             productRepo.save(product);
 
             Product product1 = new Product();
@@ -137,29 +173,63 @@ class SecurityConfig extends VaadinWebSecurity {
             product1.setPreviewUrl("");
             product1.setRank(i);
             product1.setProductType(productType1);
-            product1.setDescription("rrr");
+            product1.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
+            productRepo.save(product1);
+            HashSet<Review> reviews1 = new HashSet<>();
+            for (int l = 0; l < 7; l++) {
+                Review review = new Review();
+                review.setBranch(l%2==0?branch:branch2);
+                review.setProduct(product1);
+                review.setGrade(random.nextInt(5));
+                review.setUserDetails(l%2==0?userDetails:userDetails1);
+                review.setContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
+                reviews1.add(review);
+                reviewRepo.save(review);
+            }
+            product1.setReviews(reviews1);
             productRepo.save(product1);
 
             ProductOption productOption = new ProductOption();
             productOption.setPrice(new BigDecimal("33"));
-            productOption.setName("сыр");
+            productOption.setName("Сыр L");
             productOption.setMass(30);
             productOption.setProductSet(Set.of(product, product1));
             productOptionRepo.save(productOption);
 
             ProductOption productOption1 = new ProductOption();
             productOption1.setPrice(new BigDecimal("66"));
-            productOption1.setName("сыр X2");
+            productOption1.setName("Сыр XL");
             productOption1.setMass(60);
             productOption1.setProductSet(Set.of(product, product1));
             productOptionRepo.save(productOption1);
 
             ProductOption productOption2 = new ProductOption();
             productOption2.setPrice(new BigDecimal("99"));
-            productOption2.setName("сыр X3");
+            productOption2.setName("Сыр XXL");
             productOption2.setMass(90);
             productOption2.setProductSet(Set.of(product, product1));
             productOptionRepo.save(productOption2);
+
+            ProductOption productOption3 = new ProductOption();
+            productOption3.setPrice(new BigDecimal("10"));
+            productOption3.setName("Халапеньо L");
+            productOption3.setMass(10);
+            productOption3.setProductSet(Set.of(product, product1));
+            productOptionRepo.save(productOption3);
+
+            ProductOption productOption4 = new ProductOption();
+            productOption4.setPrice(new BigDecimal("20"));
+            productOption4.setName("Халапеньо XL");
+            productOption4.setMass(20);
+            productOption4.setProductSet(Set.of(product, product1));
+            productOptionRepo.save(productOption4);
+
+            ProductOption productOption5 = new ProductOption();
+            productOption5.setPrice(new BigDecimal("40"));
+            productOption5.setName("Лук");
+            productOption5.setMass(35);
+            productOption5.setProductSet(Set.of(product, product1));
+            productOptionRepo.save(productOption5);
 
             BranchProduct branchProduct = new BranchProduct();
             branchProduct.setHide(false);

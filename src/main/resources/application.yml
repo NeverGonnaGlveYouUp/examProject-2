@@ -46,7 +46,7 @@ server:
       enabled: true
     include-stacktrace: always
   address: localhost
-  port: ${PORT:8080}
+  port: ${PORT:8888}
 vaadin:
   allowed-packages: ru.tusur.ShaurmaWebSiteProject, com.vaadin, org.vaadin
 logging:
@@ -62,4 +62,4 @@ logging:
   org.springframework.web: trace
 external:
   server:
-    address: http://localhost:8080 # Do not include trailing slash
+    address: http://localhost:8888 # Do not include trailing slash

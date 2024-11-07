@@ -9,5 +9,7 @@ public enum LikeState {
     DISLIKE(-1);
     private int anInt;
 
-    LikeState(int i) {}
+
+
+    LikeState(int i) {this.anInt = i;}
 }

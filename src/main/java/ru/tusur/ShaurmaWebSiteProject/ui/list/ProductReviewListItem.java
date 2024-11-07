@@ -6,7 +6,9 @@ import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.SvgIcon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -16,8 +18,11 @@ import ru.tusur.ShaurmaWebSiteProject.backend.model.Likes;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Review;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.LikesRepo;
+import ru.tusur.ShaurmaWebSiteProject.ui.components.Badge;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.BadgeVariant;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +52,6 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
 
         Layout secondary = new Layout();
         secondary.setFlexDirection(Layout.FlexDirection.ROW);
-        secondary.addClassNames(LumoUtility.Margin.Bottom.XSMALL, LumoUtility.Margin.Top.SMALL);
         secondary.setAlignItems(Layout.AlignItems.CENTER);
         secondary.setGap(Layout.Gap.SMALL);
         if (userDetails == null) {
@@ -59,8 +63,10 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         Layout mainLayout = new Layout();
         mainLayout.setAlignItems(Layout.AlignItems.START);
         mainLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
+        mainLayout.addClassNames(LumoUtility.Margin.Top.MEDIUM);
         mainLayout.add(new HorizontalLayout(createAvatar(), userNameStars), secondary);
 
+        this.getStyle().set("list-style-type", "none");
         this.add(mainLayout);
     }
 
@@ -77,7 +83,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
 
     private Avatar createAvatar() {
         Avatar avatar = new Avatar(userDetailsFromReview.getAvatarUrl());
-        avatar.addThemeVariants(AvatarVariant.LUMO_SMALL);
+        avatar.addThemeVariants(AvatarVariant.LUMO_LARGE);
         if (userDetails != null) {
             avatar.setImageResource(ImageResourceUtils.getImageResource(userDetails.getAvatarUrl()));
         }
@@ -90,14 +96,29 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         List<Likes> allLikes = likesRepo.findAllByReview(review);
         AtomicReference<Integer> rate = new AtomicReference<>(0);
         allLikes.forEach(value -> rate.getAndUpdate(integer -> integer+value.getLikes().getAnInt()));
+        boolean likeStateBoolean = likeOfUser.get().map(likes -> likes.getLikes() != LikeState.LIKE).orElse(true);
+        LikeState likeState = likeOfUser.get().map(Likes::getLikes).orElseThrow();
 
         Button rateUp = new Button();
         Span counter = new Span(String.valueOf(rate.get()));
         Button rateDown = new Button();
+        Layout counterIndicator = new Layout();
+        Icon indicator = new Icon();
+        if(!likeStateBoolean && likeState.equals(LikeState.LIKE)) {
+            indicator.setIcon(VaadinIcon.ARROW_UP);
+            indicator.setColor("green");
+        } else if (likeStateBoolean && likeState.equals(LikeState.DISLIKE)) {
+            indicator.setIcon(VaadinIcon.ARROW_DOWN);
+            indicator.setColor("red");
+        }
+        counterIndicator.setFlexDirection(Layout.FlexDirection.ROW);
+        counterIndicator.setAlignItems(Layout.AlignItems.CENTER);
+        counterIndicator.add(counter, indicator);
+        counterIndicator.setGap(Layout.Gap.SMALL);
 
-
+        rateUp.setTooltipText("Этот коментарий полезен");
         rateUp.setIcon(LineAwesomeIcon.CARET_UP_SOLID.create());
-        rateUp.setEnabled((likeOfUser.get().map(likes -> likes.getLikes() != LikeState.LIKE).orElse(true)));
+        rateUp.setEnabled(likeStateBoolean);
         rateUp.addClickListener(_ -> {
             counter.setText(String.valueOf(rate.updateAndGet(integer -> integer + 1)));
             likeOfUser.get().ifPresentOrElse(likes -> {
@@ -105,8 +126,12 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
                     likes.setLikes(LikeState.LIKE);
                     rateDown.setEnabled(true);
                     rateUp.setEnabled(false);
+                    indicator.setVisible(true);
+                    indicator.setIcon(VaadinIcon.ARROW_UP);
+                    indicator.setColor("green");
                 } else if (likes.getLikes() == LikeState.DISLIKE){
                     likes.setLikes(LikeState.NEUTRAL);
+                    indicator.setVisible(false);
                     rateDown.setEnabled(true);
                     rateUp.setEnabled(true);
                 }
@@ -120,11 +145,15 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
                 rateUp.setEnabled(false);
                 likesRepo.save(newLike);
                 likeOfUser.set(Optional.of(newLike));
+                indicator.setVisible(true);
+                indicator.setIcon(VaadinIcon.ARROW_UP);
+                indicator.setColor("green");
             });
         });
 
+        rateDown.setTooltipText("Этот коментарий не полезен");
         rateDown.setIcon(LineAwesomeIcon.CARET_DOWN_SOLID.create());
-        rateDown.setEnabled((likeOfUser.get().map(likes -> likes.getLikes() != LikeState.DISLIKE).orElse(true)));
+        rateDown.setEnabled(!likeStateBoolean);
         rateDown.addClickListener(_ -> {
             counter.setText(String.valueOf(rate.updateAndGet(integer -> integer - 1)));
             likeOfUser.get().ifPresentOrElse(likes -> {
@@ -132,10 +161,14 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
                     likes.setLikes(LikeState.DISLIKE);
                     rateDown.setEnabled(false);
                     rateUp.setEnabled(true);
+                    indicator.setVisible(true);
+                    indicator.setIcon(VaadinIcon.ARROW_DOWN);
+                    indicator.setColor("red");
                 } else if (likes.getLikes() == LikeState.LIKE){
                     likes.setLikes(LikeState.NEUTRAL);
                     rateDown.setEnabled(true);
                     rateUp.setEnabled(true);
+                    indicator.setVisible(false);
                 }
                 likesRepo.save(likes);
             }, () -> {
@@ -147,6 +180,9 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
                 rateUp.setEnabled(true);
                 likesRepo.save(newLike);
                 likeOfUser.set(Optional.of(newLike));
+                indicator.setVisible(true);
+                indicator.setIcon(VaadinIcon.ARROW_DOWN);
+                indicator.setColor("red");
             });
         });
 
@@ -156,7 +192,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         reactionsLayout.setAlignItems(Layout.AlignItems.CENTER);
         reactionsLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
         reactionsLayout.setGap(Layout.Gap.SMALL);
-        reactionsLayout.add(rateUp, counter, rateDown);
+        reactionsLayout.add(rateUp, counterIndicator, rateDown);
         return reactionsLayout;
     }
 
@@ -164,43 +200,21 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         int stars = review.getGrade();
         String count = String.valueOf(stars);
 
-        Span starsText = new Span(count + " звезд");
-        starsText.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.Margin.Start.XSMALL);
 
-        Layout rating = new Layout(getStars(stars));
+        Badge badge = new Badge();
+        badge.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.Margin.Start.XSMALL);
+        badge.addThemeVariants(BadgeVariant.CONTRAST, BadgeVariant.SMALL, BadgeVariant.PILL);
+        badge.setText(count);
+
+        Layout rating = new Layout(StarsUtils.getStars(stars));
         rating.addClassNames(LumoUtility.TextColor.PRIMARY);
 
-        Layout reviewLayout = new Layout(rating, starsText);
+        Layout reviewLayout = new Layout(rating, badge);
         reviewLayout.addClassNames(LumoUtility.Margin.Bottom.XSMALL, LumoUtility.Margin.Top.XSMALL);
         reviewLayout.setAlignItems(Layout.AlignItems.CENTER);
         reviewLayout.setGap(Layout.Gap.SMALL);
 
         return reviewLayout;
-    }
-
-    private Div getStars(int stars) {
-        Div div = new Div();
-        for (int i = 0; i < 5; i++) {
-            if (i < stars) {
-                div.add(createStar());
-            } else if (stars - i < 1 && stars - i > 0) {
-                div.add(createHalfStar());
-            }
-        }
-        return div;
-    }
-
-
-    private Component createStar() {
-        SvgIcon star = LineAwesomeIcon.STAR_SOLID.create();
-        star.addClassNames(LumoUtility.IconSize.SMALL);
-        return star;
-    }
-
-    private Component createHalfStar() {
-        SvgIcon star = LineAwesomeIcon.STAR_HALF_SOLID.create();
-        star.addClassNames(LumoUtility.IconSize.SMALL);
-        return star;
     }
 
 }

@@ -17,6 +17,7 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
@@ -35,7 +36,9 @@ import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.HomeView;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
 import ru.tusur.ShaurmaWebSiteProject.ui.themes.CheckboxTheme;
 import ru.tusur.ShaurmaWebSiteProject.ui.themes.RadioButtonTheme;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
+import java.text.DecimalFormat;
 import java.util.Set;
 
 import static ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils.getImageResource;
@@ -67,18 +70,6 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         return images;
     }
 
-    private Text getStars(int stars) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            if (i < stars) {
-                builder.append(createStar());
-            } else if (stars - i < 1 && stars - i > 0){
-                builder.append(createHalfStar());
-            }
-        }
-        return new Text(builder.toString());
-    }
-
     public Component createInformation() {
         RouterLink aDefault = new RouterLink(productName, ProductDetailsView.class, "default");
         aDefault.getElement().removeAttribute("href");
@@ -89,15 +80,13 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         );
         breadcrumb.addClassNames(Margin.Bottom.XSMALL);
 
+        DecimalFormat df = new DecimalFormat("#.##");
+        double ratingValue = product.getReviews().stream().mapToInt(Review::getGrade).sum() / (double) product.getReviews().size();
 
-        int stars = product.getReviews().stream().mapToInt(Review::getGrade).sum();
-        double dCount = stars / (double) product.getReviews().size();
-        String count = String.valueOf(Double.isNaN(dCount) ? 0 : (int) dCount);
-
-        Span starsText = new Span(count + " звезд");
+        Span starsText = new Span( df.format(ratingValue) + " | Количество отзывов: " + product.getReviews().size());
         starsText.addClassNames(FontSize.SMALL, Margin.Start.XSMALL);
 
-        Layout rating = new Layout(getStars(stars));
+        Layout rating = new Layout(StarsUtils.getStars(ratingValue));
         rating.addClassNames(TextColor.PRIMARY);
 
         Button review = new Button("Оставить отзыв", e -> {
@@ -142,7 +131,7 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         quantityLayout.setDisplay(Layout.Display.GRID);
         quantityLayout.setGap(Layout.Gap.SMALL);
 
-        H3 reviewsTitle = new H3("Отзывы");
+        H3 reviewsTitle = new H3("Отзывы"); //TODO add anchor like #
         reviewsTitle.addClassNames(FontSize.SMALL, Margin.Top.SMALL);
         reviewsTitle.setId(reviewsTitle.getText().replace(" ", "-").toLowerCase());
         Layout reviews = new Layout();
@@ -156,18 +145,6 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         layout.setBoxSizing(Layout.BoxSizing.BORDER);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
         return layout;
-    }
-
-    private Component createStar() {
-        SvgIcon star = LineAwesomeIcon.STAR_SOLID.create();
-        star.addClassNames(IconSize.SMALL);
-        return star;
-    }
-
-    private Component createHalfStar() {
-        SvgIcon star = LineAwesomeIcon.STAR_HALF_SOLID.create();
-        star.addClassNames(IconSize.SMALL);
-        return star;
     }
 
     private Component renderLabelWithDescription(String title, String desc) {

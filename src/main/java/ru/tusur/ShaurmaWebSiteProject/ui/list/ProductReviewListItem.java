@@ -1,10 +1,8 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.list;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.SvgIcon;
@@ -12,6 +10,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.jetbrains.annotations.NotNull;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.LikeState;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Likes;
@@ -24,6 +23,8 @@ import ru.tusur.ShaurmaWebSiteProject.ui.utils.BadgeVariant;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,24 +51,53 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         userNameStars.setFlexDirection(Layout.FlexDirection.COLUMN);
         userNameStars.add(new Span(userDetailsFromReview.getUsername()), createStars());
 
+        Layout head = new Layout();
+        head.setFlexDirection(Layout.FlexDirection.ROW);
+        head.setJustifyContent(Layout.JustifyContent.BETWEEN);
+        head.setAlignItems(Layout.AlignItems.STRETCH);
+        head.setAlignItems(Layout.AlignItems.CENTER);
+        head.add(userNameStars, createTimeStampAndModOptions());
+
         Layout secondary = new Layout();
         secondary.setFlexDirection(Layout.FlexDirection.ROW);
-        secondary.setAlignItems(Layout.AlignItems.CENTER);
         secondary.setGap(Layout.Gap.SMALL);
-        if (userDetails == null) {
-            secondary.add(createTextArea());
-        } else {
-            secondary.add(createReviewReactions(review), createTextArea());
-        }
+        secondary.addClassName(LumoUtility.AlignSelf.STRETCH);
+
+        if (userDetails == null) secondary.add(createTextArea());
+        else secondary.add(createReviewReactions(review), createTextArea());
 
         Layout mainLayout = new Layout();
         mainLayout.setAlignItems(Layout.AlignItems.START);
         mainLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
-        mainLayout.addClassNames(LumoUtility.Margin.Top.MEDIUM);
-        mainLayout.add(new HorizontalLayout(createAvatar(), userNameStars), secondary);
+        mainLayout.addClassNames(LumoUtility.Margin.Top.LARGE, LumoUtility.AlignSelf.STRETCH);
+        mainLayout.add(new HorizontalLayout(createAvatar(), head), secondary);
 
         this.getStyle().set("list-style-type", "none");
         this.add(mainLayout);
+    }
+
+    private Layout createTimeStampAndModOptions() {
+        DateFormat formatter = new SimpleDateFormat("dd.MM.yyyy");
+        Span span = new Span(formatter.format(review.getDate()));
+
+        Layout layout = new Layout();
+        layout.setAlignItems(Layout.AlignItems.STRETCH);
+        layout.setAlignItems(Layout.AlignItems.CENTER);
+        layout.setGap(Layout.Gap.SMALL);
+
+        if (userDetails == null) layout.add(span);
+        else layout.add(span, getButton());
+
+        return layout;
+    }
+
+    private static @NotNull Button getButton() {
+        Button button = new Button();
+        button.setIcon(LineAwesomeIcon.EXCLAMATION_CIRCLE_SOLID.create());
+        button.addClassNames(LumoUtility.IconSize.SMALL);
+        button.addClickListener(event -> {
+        });
+        return button;
     }
 
     private TextArea createTextArea() {
@@ -75,9 +105,8 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         textArea.setValue(review.getContent());
         textArea.setHeightFull();
         textArea.setWidthFull();
-        textArea.getStyle().setMarginTop(LumoUtility.Margin.Top.SMALL);
+        textArea.getStyle().setMarginTop("8px");
         textArea.setReadOnly(true);
-
         return textArea;
     }
 
@@ -91,11 +120,10 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
     }
 
     private Layout createReviewReactions(Review review) {
-
         AtomicReference<Optional<Likes>> likeOfUser = new AtomicReference<>(likesRepo.findByUserDetailsAndReview(userDetails, review));
         List<Likes> allLikes = likesRepo.findAllByReview(review);
         AtomicReference<Integer> rate = new AtomicReference<>(0);
-        allLikes.forEach(value -> rate.getAndUpdate(integer -> integer+value.getLikes().getAnInt()));
+        allLikes.forEach(value -> rate.getAndUpdate(integer -> integer + value.getLikes().getAnInt()));
         boolean likeStateBoolean = likeOfUser.get().map(likes -> likes.getLikes() != LikeState.LIKE).orElse(true);
         LikeState likeState = likeOfUser.get().map(Likes::getLikes).orElseThrow();
 
@@ -104,13 +132,14 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         Button rateDown = new Button();
         Layout counterIndicator = new Layout();
         Icon indicator = new Icon();
-        if(!likeStateBoolean && likeState.equals(LikeState.LIKE)) {
+        if (!likeStateBoolean && likeState.equals(LikeState.LIKE)) {
             indicator.setIcon(VaadinIcon.ARROW_UP);
             indicator.setColor("green");
         } else if (likeStateBoolean && likeState.equals(LikeState.DISLIKE)) {
             indicator.setIcon(VaadinIcon.ARROW_DOWN);
             indicator.setColor("red");
-        }
+        } else indicator.setVisible(false);
+
         counterIndicator.setFlexDirection(Layout.FlexDirection.ROW);
         counterIndicator.setAlignItems(Layout.AlignItems.CENTER);
         counterIndicator.add(counter, indicator);
@@ -122,14 +151,14 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         rateUp.addClickListener(_ -> {
             counter.setText(String.valueOf(rate.updateAndGet(integer -> integer + 1)));
             likeOfUser.get().ifPresentOrElse(likes -> {
-                if(likes.getLikes() == LikeState.NEUTRAL){
+                if (likes.getLikes() == LikeState.NEUTRAL) {
                     likes.setLikes(LikeState.LIKE);
                     rateDown.setEnabled(true);
                     rateUp.setEnabled(false);
                     indicator.setVisible(true);
                     indicator.setIcon(VaadinIcon.ARROW_UP);
                     indicator.setColor("green");
-                } else if (likes.getLikes() == LikeState.DISLIKE){
+                } else if (likes.getLikes() == LikeState.DISLIKE) {
                     likes.setLikes(LikeState.NEUTRAL);
                     indicator.setVisible(false);
                     rateDown.setEnabled(true);
@@ -157,14 +186,14 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         rateDown.addClickListener(_ -> {
             counter.setText(String.valueOf(rate.updateAndGet(integer -> integer - 1)));
             likeOfUser.get().ifPresentOrElse(likes -> {
-                if(likes.getLikes() == LikeState.NEUTRAL){
+                if (likes.getLikes() == LikeState.NEUTRAL) {
                     likes.setLikes(LikeState.DISLIKE);
                     rateDown.setEnabled(false);
                     rateUp.setEnabled(true);
                     indicator.setVisible(true);
                     indicator.setIcon(VaadinIcon.ARROW_DOWN);
                     indicator.setColor("red");
-                } else if (likes.getLikes() == LikeState.LIKE){
+                } else if (likes.getLikes() == LikeState.LIKE) {
                     likes.setLikes(LikeState.NEUTRAL);
                     rateDown.setEnabled(true);
                     rateUp.setEnabled(true);
@@ -186,7 +215,6 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
             });
         });
 
-
         Layout reactionsLayout = new Layout();
         reactionsLayout.addClassNames(LumoUtility.Margin.Bottom.XSMALL, LumoUtility.Margin.Top.SMALL);
         reactionsLayout.setAlignItems(Layout.AlignItems.CENTER);
@@ -199,7 +227,6 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
     private Layout createStars() {
         int stars = review.getGrade();
         String count = String.valueOf(stars);
-
 
         Badge badge = new Badge();
         badge.addClassNames(LumoUtility.FontSize.SMALL, LumoUtility.Margin.Start.XSMALL);
@@ -218,4 +245,3 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
     }
 
 }
-

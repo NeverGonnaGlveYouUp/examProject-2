@@ -3,6 +3,7 @@ package ru.tusur.ShaurmaWebSiteProject.ui.components;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import lombok.Getter;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.Breakpoint;
 
 import java.util.HashMap;
@@ -390,6 +391,7 @@ public class Layout extends Div {
         }
     }
 
+    @Getter
     public enum Gap {
         PIXEL("gap-px"),
         XSMALL(LumoUtility.Gap.XSMALL),
@@ -404,10 +406,6 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
-
         public ColumnGap getColumnGap() {
             return ColumnGap.valueOf(this.name());
         }
@@ -417,6 +415,7 @@ public class Layout extends Div {
         }
     }
 
+    @Getter
     public enum GridColumns {
         COLUMNS_1(LumoUtility.Grid.Column.COLUMNS_1),
         COLUMNS_2(LumoUtility.Grid.Column.COLUMNS_2),
@@ -437,12 +436,10 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
     }
 
 
+    @Getter
     public enum LineClamp {
         LINE_CLAMP_1("line-clamp-1"),
         LINE_CLAMP_2("line-clamp-2"),
@@ -455,11 +452,9 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
     }
 
+    @Getter
     public enum RowGap {
         PIXEL("gap-y-px"),
         XSMALL(LumoUtility.Gap.Row.XSMALL),
@@ -474,11 +469,9 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
     }
 
+    @Getter
     public enum JustifyContent {
         AROUND(LumoUtility.JustifyContent.AROUND),
         BETWEEN(LumoUtility.JustifyContent.BETWEEN),
@@ -493,11 +486,9 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
     }
 
+    @Getter
     public enum Overflow {
         AUTO(LumoUtility.Overflow.AUTO),
         HIDDEN(LumoUtility.Overflow.HIDDEN);
@@ -508,11 +499,9 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
     }
 
+    @Getter
     public enum Position {
         ABSOLUTE(LumoUtility.Position.ABSOLUTE),
         FIXED(LumoUtility.Position.FIXED),
@@ -526,9 +515,6 @@ public class Layout extends Div {
             this.className = className;
         }
 
-        public String getClassName() {
-            return this.className;
-        }
     }
 
 }

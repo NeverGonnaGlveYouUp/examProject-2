@@ -10,8 +10,10 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
+import ru.tusur.ShaurmaWebSiteProject.backend.service.ShopCartService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.InputGroup;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.KeyValuePair;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.KeyValuePairs;
@@ -27,26 +29,35 @@ import ru.tusur.ShaurmaWebSiteProject.ui.themes.InputTheme;
 @Route(value = "Карзина", layout = MainLayout.class)
 public class ShoppingCartView extends Main {
 
-    public ShoppingCartView() {
+    private final ShopCartService shopCartService;
+
+    public ShoppingCartView(ShopCartService shopCartService) {
+        this.shopCartService = shopCartService;
         addClassNames(BoxSizing.BORDER, Display.FLEX, FlexDirection.COLUMN, FlexDirection.Breakpoint.Medium.ROW,
                 Margin.Horizontal.AUTO, MaxWidth.SCREEN_LARGE);
         add(createShoppingCart(), createSummary());
     }
 
     private Component createShoppingCart() {
-        H2 title = new H2("Items (3)");
+        H2 title = new H2("Товары");
         title.addClassNames(FontSize.XLARGE, Margin.Top.XLARGE);
 
-        MyComponentList list = new MyComponentList(
-                new ShoppingCartListItem(
-                        "https://images.unsplash.com/photo-1610136649349-0f646f318053?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=320&q=80",
-                        "Black framed sunglasses on white table",
-                        "Sunglasses 001",
-                        "Introducing the ZephyrBlaze HyperShade sunglasses, a cosmic fusion of neon splashes and techno-textured frames. These avant-garde shades defy gravity, turning sunbeams into pixelated rainbows.",
-                        "550,00 €"
-                )
-        );
+        MyComponentList list = new MyComponentList();
         list.addClassNames("divide-y");
+        shopCartService
+                .getAllOrderContent(VaadinService.getCurrentRequest().getWrappedSession().getId())
+                .forEach(orderContent ->
+                        list.add(
+                                new ShoppingCartListItem(
+                                        orderContent.getProduct().getPreviewUrl(),
+                                        orderContent.getProduct().getName(),
+                                        orderContent.getProduct().getName(),
+                                        orderContent.getProduct().getDescription(),
+                                        orderContent.getProduct().getPrice().toString()
+                                )
+                        )
+                );
+
 
         Section section = new Section(title, list);
         section.addClassNames(BoxSizing.BORDER, Padding.Horizontal.LARGE);
@@ -54,30 +65,37 @@ public class ShoppingCartView extends Main {
     }
 
     private Component createSummary() {
-        H2 title = new H2("Order summary");
+        H2 title = new H2("Ваша корзина");
         title.addClassNames(FontSize.XLARGE);
 
+
+        KeyValuePair mass = new KeyValuePair("Масса", "140 г");
+        KeyValuePair productSum = new KeyValuePair("Сумма товаров", "550,00 €");
+        KeyValuePair delivery = new KeyValuePair("Доставка", "0,00 €");
+        KeyValuePair sum = new KeyValuePair("Всего", "550,00 €");
         KeyValuePairs pairs = new KeyValuePairs(
-                new KeyValuePair("Subtotal", "550,00 €"),
-                new KeyValuePair("Delivery", "0,00 €"),
-                new KeyValuePair("Total", "550,00 €")
+                mass,
+                productSum,
+                delivery,
+                sum
         );
+
         pairs.addClassNames("divide-y");
         pairs.setKeyWidthFull();
         pairs.removeBackgroundColor();
         pairs.removeHorizontalPadding();
 
-        TextField code = new TextField("Enter a promo code");
+        TextField code = new TextField("Введите промо код");
         code.addClassNames(Flex.GROW);
         code.addThemeName(InputTheme.OUTLINE);
 
-        Button apply = new Button("Apply");
+        Button apply = new Button("Применить");
         apply.addClassNames(Background.BASE);
         apply.addThemeName(ButtonTheme.OUTLINE);
 
         InputGroup inputGroup = new InputGroup(code, apply);
 
-        RouterLink checkout = new RouterLink("Checkout", CheckoutView.class);
+        RouterLink checkout = new RouterLink("Оплата", CheckoutView.class);
         checkout.addClassNames(AlignItems.CENTER, Background.PRIMARY, BorderRadius.MEDIUM, Display.FLEX,
                 FontWeight.SEMIBOLD, Height.MEDIUM, JustifyContent.CENTER, TextColor.PRIMARY_CONTRAST);
 

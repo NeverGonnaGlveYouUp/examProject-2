@@ -1,26 +1,43 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.utils;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.vaadin.lineawesome.LineAwesomeIcon;
+import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 
 public class StarsUtils {
-    public static Div getStars(double stars) {
-        Div div = new Div();
+
+
+    public static Layout getStars(double stars) {
+        Layout layout = new Layout();
+        layout.setFlexDirection(Layout.FlexDirection.ROW);
+        layout.setGap(Layout.Gap.XSMALL);
         for (int i = 1; i <= 5; i++) {
             if (i - stars < 1 && i - stars > 0) {
-                div.add(createHalfStar());
+                layout.add(createHalfStar());
             } else if (i < stars) {
-                div.add(createStar());
+                layout.add(createStar());
             } else {
-                div.add(createEmptyStar());
+                layout.add(createEmptyStar());
             }
         }
-        return div;
+        return layout;
     }
 
+    public static Layout getStars(int stars) {
+        Layout layout = new Layout();
+        layout.setFlexDirection(Layout.FlexDirection.ROW);
+        layout.setGap(Layout.Gap.XSMALL);
+        for (int i = 0; i < 5; i++) {
+            if (i < stars) {
+                layout.add(createStar());
+            } else {
+                layout.add(createEmptyStar());
+            }
+        }
+        return layout;
+    }
 
     private static Component createStar() {
         SvgIcon star = LineAwesomeIcon.STAR_SOLID.create();

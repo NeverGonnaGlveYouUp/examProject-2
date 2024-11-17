@@ -24,6 +24,7 @@ public interface BranchProductRepo extends JpaRepository<BranchProduct, Long> {
     BranchProduct findById(BranchProductKey branchProductKey);
 
     List<Product> findAllProductByBranch(Branch branch);
+
     List<BranchProduct> findAllByBranch(Branch branch);
 
     @Modifying
@@ -31,4 +32,33 @@ public interface BranchProductRepo extends JpaRepository<BranchProduct, Long> {
     @Query("update BranchProduct bp set bp.hide= :hide WHERE bp.id= :id")
     void findByIdThenSetHide(@Param("id") BranchProductKey branchProductKey,
                              @Param("hide") boolean b);
+
+    @Query(value = "SELECT branch_id, product_id, hide\n" +
+            "FROM branch_product1\n", nativeQuery = true)
+    List<BranchProduct> getAll();
+
+    @Query(value = "SELECT branch_id, product_id, hide\n" +
+            "FROM branch_product1 " +
+            "WHERE branch_id=:b_id AND product_id=:p_id", nativeQuery = true)
+    BranchProduct getOne(@Param("b_id") Long b_id, @Param("p_id") Long p_id);
+
+    @Transactional
+    @Modifying
+    @Query(value = "INSERT INTO branch_product1\n" +
+            "(hide, branch_id, product_id)\n" +
+            "VALUES(:b, :b_id, :p_id)", nativeQuery = true)
+    void create(@Param("b") boolean b, @Param("b_id") Long b_id, @Param("p_id") Long p_id);
+
+    @Transactional
+    @Modifying
+    @Query(value = "UPDATE branch_product1\n" +
+            "SET hide=:b\n" +
+            "WHERE branch_id=:b_id AND product_id=:p_id", nativeQuery = true)
+    void update(@Param("b") boolean b, @Param("b_id") Long b_id, @Param("p_id") Long p_id);
+
+    @Transactional
+    @Modifying
+    @Query(value = "DELETE FROM branch_product1\n" +
+            "WHERE branch_id=:b_id AND product_id=:p_id", nativeQuery = true)
+    void delete(@Param("b_id") Long b_id, @Param("p_id") Long p_id);
 }

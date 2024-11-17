@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -41,6 +42,24 @@ public class OrderContent {
     @OneToMany
     private Set<ProductOption> productOptionSet;
 
-    int num;
+    int num = 0;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        OrderContent that = (OrderContent) o;
+        return Objects.equals(id, that.id) && product.equals(that.product) && Objects.equals(order, that.order) && Objects.equals(branch, that.branch) && Objects.equals(productOptionSet, that.productOptionSet);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(id);
+        result = 31 * result + product.hashCode();
+        result = 31 * result + Objects.hashCode(order);
+        result = 31 * result + Objects.hashCode(branch);
+        result = 31 * result + Objects.hashCode(productOptionSet);
+        return result;
+    }
 }

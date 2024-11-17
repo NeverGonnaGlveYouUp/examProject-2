@@ -36,7 +36,9 @@ import ru.tusur.ShaurmaWebSiteProject.ui.list.ProductListItem;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.LazyPlaceholder;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.BadgeVariant;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -95,7 +97,7 @@ public class MainProductView extends Main implements LazyPlaceholder {
 
             int stars = Integer.parseInt(item.split(" ")[0]);
 
-            Span span = new Span(getStars(stars), badge);
+            Span span = new Span(StarsUtils.getStars(stars), badge);
             span.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Display.FLEX, LumoUtility.Gap.SMALL);
             span.getElement().setAttribute("aria-hidden", "true");
 
@@ -131,18 +133,6 @@ public class MainProductView extends Main implements LazyPlaceholder {
             span.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Display.FLEX, LumoUtility.Gap.SMALL);
             return span;
         }));
-    }
-
-    private Text getStars(int stars) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            if (i < stars) {
-                builder.append("★");
-            } else {
-                builder.append("☆");
-            }
-        }
-        return new Text(builder.toString());
     }
 
     public Component createToolbar() {
@@ -230,9 +220,8 @@ public class MainProductView extends Main implements LazyPlaceholder {
             for (Product product : products) {
                 reviews = product.getReviews();
 
-                int stars = reviews.stream().mapToInt(Review::getGrade).sum();
-                double dCount = stars / (double) reviews.size();
-                String count = String.valueOf(Double.isNaN(dCount) ? 0 : (int) dCount);
+                DecimalFormat df = new DecimalFormat("#.##");
+                double ratingValue = product.getReviews().stream().mapToInt(Review::getGrade).sum() / (double) product.getReviews().size();
 
                 Span span = new Span();
                 span.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Display.FLEX, LumoUtility.Gap.SMALL);
@@ -240,8 +229,8 @@ public class MainProductView extends Main implements LazyPlaceholder {
 
                 Badge badge = new Badge();
                 badge.addThemeVariants(BadgeVariant.CONTRAST, BadgeVariant.SMALL, BadgeVariant.PILL);
-                badge.setText(count);
-                span.add(getStars(stars), badge);
+                badge.setText(df.format(ratingValue));
+                span.add(StarsUtils.getStars(ratingValue), badge);
 
 
                 list.add(

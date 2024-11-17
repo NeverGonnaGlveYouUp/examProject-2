@@ -3,14 +3,17 @@ package ru.tusur.ShaurmaWebSiteProject.ui.list;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.MultiSelectComboBox;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils;
 
 public class ShoppingCartListItem extends ListItem {
 
@@ -20,10 +23,9 @@ public class ShoppingCartListItem extends ListItem {
     private Paragraph price;
 
     public ShoppingCartListItem(String src, String alt, String title, String description, String price) {
-        addClassNames(AlignItems.START, Display.FLEX, FlexDirection.COLUMN, FlexDirection.Breakpoint.Large.ROW,
-                Gap.LARGE, Padding.Vertical.LARGE, Position.RELATIVE);
+        addClassNames(AlignItems.START, Display.FLEX, FlexDirection.COLUMN, FlexDirection.Breakpoint.Large.ROW, Gap.LARGE, Padding.Vertical.LARGE, Position.RELATIVE);
 
-        this.image = new Image(src, alt);
+        this.image = new Image(ImageResourceUtils.getImageResource(src), alt);
         this.image.addClassNames(BorderRadius.LARGE);
         this.image.setWidthFull();
 
@@ -42,7 +44,7 @@ public class ShoppingCartListItem extends ListItem {
         IntegerField quantity = new IntegerField();
         quantity.setAriaLabel("Quantity");
         quantity.setMax(9);
-        quantity.setMin(1);
+        quantity.setMin(0);
         quantity.setStepButtonsVisible(true);
         quantity.setValue(1);
         quantity.setWidth(6, Unit.REM);

@@ -4,12 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.tusur.ShaurmaWebSiteProject.backend.config.SimpleCacheCustomizer;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Branch;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.BranchProduct;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchProductRepo;
@@ -19,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ProductService{
+public class ProductService {
 
     @Autowired
     private ProductRepo productRepo;

@@ -32,7 +32,6 @@ import ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils;
 
 import java.util.Objects;
 
-//@CssImport(value = "vaadin-app-layout.css", themeFor = "vaadin-app-layout")
 public class MainLayout extends AppLayout {
     private final SecurityService securityService;
     private UserDetails userDetails;

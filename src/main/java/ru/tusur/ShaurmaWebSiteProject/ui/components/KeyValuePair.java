@@ -42,6 +42,10 @@ public class KeyValuePair extends Layout {
         setPosition(Position.RELATIVE);
     }
 
+    public void setValue(String newValue){
+        value = new DescriptionList.Description(new Text(newValue));;
+    }
+
     /**
      * Determines when the key is positioned on top.
      * Only works with KeyPosition.SIDE. Otherwise, the key is always on top.

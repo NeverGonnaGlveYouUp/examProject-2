@@ -1,7 +1,6 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.config;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
-import org.apache.catalina.util.ResourceSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -62,7 +61,6 @@ class SecurityConfig extends VaadinWebSecurity {
     @Autowired
     DelegatingPasswordEncoder delegatingPasswordEncoder;
 
-//    get jwt key
     @Value("${jwt.auth.secret}")
     private String authSecret;
 
@@ -84,9 +82,6 @@ class SecurityConfig extends VaadinWebSecurity {
 
         super.configure(http);
         setLoginView(http, LoginView.class);
-//        http.formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.defaultSuccessUrl("/"));
-
-        //JWT Auth
         setStatelessAuthentication(http, new SecretKeySpec(Base64.getDecoder().decode(authSecret), JwsAlgorithms.HS256), "ru.tusur.ShaurmaWebSiteProject");
 
 
@@ -103,6 +98,13 @@ class SecurityConfig extends VaadinWebSecurity {
         userDetails1.setTransientPassword("admin1@admin1.admin");
         userDetails1.setUsername("admin1@admin1.admin");
         customUserDetailsService.store(userDetails1);
+
+        UserDetails userDetails2 = new UserDetails();
+        userDetails2.setRole(Roles.ADMIN);
+        userDetails2.setEmail("user@user.user");
+        userDetails2.setTransientPassword("user@user.user");
+        userDetails2.setUsername("user@user.user");
+        customUserDetailsService.store(userDetails2);
 
         ProductTypeEntity productType = new ProductTypeEntity();
         productType.setName("Шаурма");
@@ -140,24 +142,25 @@ class SecurityConfig extends VaadinWebSecurity {
             product.setPreviewUrl("src/main/resources/META-INF/resources/images/img.png");
             product.setRank(i);
             product.setProductType(productType);
+            product.setMass(350);
             product.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
             productRepo.save(product);
             HashSet<Review> reviews = new HashSet<>();
             for (int j = 0; j < 7; j++) {
                 Review review = new Review();
-                review.setBranch(j%2==0?branch:branch1);
+                review.setBranch(j % 2 == 0 ? branch : branch1);
                 review.setProduct(product);
                 review.setGrade(random.nextInt(5));
-                review.setUserDetails(j%2==0?userDetails:userDetails1);
+                review.setUserDetails(j % 2 == 0 ? userDetails : userDetails1);
                 review.setContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
                 reviews.add(review);
                 reviewRepo.save(review);
                 HashSet<Likes> likesHashSet = new HashSet<>();
                 for (int k = 0; k <= 1; k++) {
                     Likes likes = new Likes();
-                    likes.setLikes(k%5==0?LikeState.DISLIKE:LikeState.LIKE);
+                    likes.setLikes(k % 5 == 0 ? LikeState.DISLIKE : LikeState.LIKE);
                     likes.setReview(review);
-                    likes.setUserDetails(k==1?userDetails:userDetails1);
+                    likes.setUserDetails(k == 1 ? userDetails : userDetails1);
                     likesHashSet.add(likes);
                     likesRepo.save(likes);
                 }
@@ -170,18 +173,19 @@ class SecurityConfig extends VaadinWebSecurity {
             Product product1 = new Product();
             product1.setName("DONNER_KEBAB из кота V" + i);
             product1.setPrice(new BigDecimal("350"));
-            product1.setPreviewUrl("");
+            product1.setPreviewUrl("src/main/resources/META-INF/resources/images/1663705172_3-mykaleidoscope-ru-p-kebab-v-lavashe-yeda-krasivo-3-3345574924.jpg");
             product1.setRank(i);
+            product1.setMass(390);
             product1.setProductType(productType1);
             product1.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
             productRepo.save(product1);
             HashSet<Review> reviews1 = new HashSet<>();
             for (int l = 0; l < 7; l++) {
                 Review review = new Review();
-                review.setBranch(l%2==0?branch:branch2);
+                review.setBranch(l % 2 == 0 ? branch : branch2);
                 review.setProduct(product1);
                 review.setGrade(random.nextInt(5));
-                review.setUserDetails(l%2==0?userDetails:userDetails1);
+                review.setUserDetails(l % 2 == 0 ? userDetails : userDetails1);
                 review.setContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
                 reviews1.add(review);
                 reviewRepo.save(review);
@@ -246,65 +250,5 @@ class SecurityConfig extends VaadinWebSecurity {
             branchProductRepo.save(branchProduct1);
 
         }
-
-
-
-//        Order order1 = new Order();
-//        Order order = new Order();
-//
-//        Payment payment = new Payment();
-//        payment.setPaymentType(PaymentType.CARD);
-//        payment.setPaymentState(PaymentState.NO_PAYMENT);
-//        paymentRepo.save(payment);
-//
-//        Payment payment1 = new Payment();
-//        payment1.setPaymentType(PaymentType.SBP);
-//        payment1.setPaymentState(PaymentState.PAYMENT_DONE);
-//        paymentRepo.save(payment1);
-//
-//        order.setOrderState(OrderState.DELIVERED);
-//        order.setSum(new BigDecimal("700"));
-//        order.setUserDetails(userDetails);
-//        order.setPayment(payment);
-//
-//        order1.setOrderState(OrderState.CANCELLED_BY_USER);
-//        order1.setSum(new BigDecimal("750"));
-//        order1.setUserDetails(userDetails);
-//        order1.setPayment(payment1);
-//        orderRepo.save(order1);
-//        orderRepo.save(order);
-//
-//        OrderContent orderContent2 = new OrderContent();
-//        orderContent2.setProduct(product3);
-//        orderContent2.setNum(4);
-//        orderContent2.setOrder(order);
-//        orderContent2.setBranch(branch);
-//        orderContent2.setId(new OrderContentKey(product3.getId(), order.getId()));
-//        orderContentRepo.save(orderContent2);
-//
-//        OrderContent orderContent3 = new OrderContent();
-//        orderContent3.setProduct(product4);
-//        orderContent3.setNum(1);
-//        orderContent3.setOrder(order1);
-//        orderContent3.setBranch(branch2);
-//        orderContent3.setId(new OrderContentKey(product4.getId(), order1.getId()));
-//        orderContentRepo.save(orderContent3);
-//
-//
-//        OrderContent orderContent = new OrderContent();
-//        orderContent.setProduct(product);
-//        orderContent.setNum(1);
-//        orderContent.setBranch(branch);
-//        orderContent.setOrder(order);
-//        orderContent.setId(new OrderContentKey(product.getId(), order.getId()));
-//        orderContentRepo.save(orderContent);
-//
-//        OrderContent orderContent1 = new OrderContent();
-//        orderContent1.setProduct(product4);
-//        orderContent1.setNum(1);
-//        orderContent1.setOrder(order);
-//        orderContent1.setBranch(branch);
-//        orderContent1.setId(new OrderContentKey(product4.getId(), order.getId()));
-//        orderContentRepo.save(orderContent1);
     }
 }

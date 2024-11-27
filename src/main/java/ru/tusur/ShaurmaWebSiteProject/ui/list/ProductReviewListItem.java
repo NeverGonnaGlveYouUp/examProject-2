@@ -146,7 +146,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         counterIndicator.setGap(Layout.Gap.SMALL);
 
         rateUp.setTooltipText("Этот коментарий полезен");
-        rateUp.setIcon(LineAwesomeIcon.CARET_UP_SOLID.create());
+        rateUp.setIcon(LineAwesomeIcon.THUMBS_UP.create());
         rateUp.setEnabled(likeStateBoolean);
         rateUp.addClickListener(_ -> {
             counter.setText(String.valueOf(rate.updateAndGet(integer -> integer + 1)));
@@ -181,7 +181,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         });
 
         rateDown.setTooltipText("Этот коментарий не полезен");
-        rateDown.setIcon(LineAwesomeIcon.CARET_DOWN_SOLID.create());
+        rateDown.setIcon(LineAwesomeIcon.THUMBS_DOWN.create());
         rateDown.setEnabled(!likeStateBoolean);
         rateDown.addClickListener(_ -> {
             counter.setText(String.valueOf(rate.updateAndGet(integer -> integer - 1)));

@@ -7,6 +7,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.apache.commons.lang3.ArrayUtils;
+import oshi.util.tuples.Pair;
 
 import java.util.Arrays;
 
@@ -15,12 +16,14 @@ public class Checkboxes extends CheckboxGroup<String>{
     private final String[] labels;
     private final String[] descriptions;
 
-    public Checkboxes(String name, String[] labels, String[] descriptions, String... themeNames) {
+    public Checkboxes(String name, Pair<String[], String[]> labelsAndDescriptions, String... themeNames) {
         super(name);
-        this.labels = Arrays.stream(labels).sorted().toArray(_ -> labels);
-        this.descriptions = Arrays.stream(descriptions).sorted().toArray(_ -> descriptions);
-//        this.labels = labels;
-//        this.descriptions = descriptions;
+        labels = new String[labelsAndDescriptions.getA().length];
+        descriptions = new String[labelsAndDescriptions.getB().length];
+        for (int i = 0; i < labelsAndDescriptions.getA().length; i++) {
+            labels[i] = labelsAndDescriptions.getA()[i];
+            descriptions[i] = labelsAndDescriptions.getB()[i];
+        }
         if (descriptions.length > 0){
             createCheckboxGroupWithDescriptions(themeNames);
         } else {

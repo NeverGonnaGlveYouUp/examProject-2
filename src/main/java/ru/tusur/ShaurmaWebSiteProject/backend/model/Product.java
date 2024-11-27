@@ -1,16 +1,13 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.model;
 
 
-import com.vaadin.hilla.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.atmosphere.config.service.Get;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -41,10 +38,10 @@ public class Product {
     private Integer rank;
 
     @ManyToOne
-    @JoinColumn(name="type_id", nullable=false)
+    @JoinColumn(name = "type_id", nullable = false)
     private ProductTypeEntity productType;
 
-    @OneToMany(mappedBy="product", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     private Set<Review> reviews;
 
     @ManyToMany(mappedBy = "productSet", fetch = FetchType.EAGER)
@@ -54,9 +51,9 @@ public class Product {
     private Set<OrderContent> orderContents;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @JoinTable(name="content_map", joinColumns=@JoinColumn(name="product_id", referencedColumnName = "id"))
-    @MapKeyColumn (name="content_name")
-    @Column(name="content_mass")
+    @JoinTable(name = "content_map", joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"))
+    @MapKeyColumn(name = "content_name")
+    @Column(name = "content_mass")
     private Map<String, Integer> contentMap = new HashMap<>();
 
     @Override

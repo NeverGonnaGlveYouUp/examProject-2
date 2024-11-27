@@ -3,6 +3,7 @@ import jakarta.validation.constraints.NotNull;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.mapping.List;
 
 import java.util.Date;
 import java.util.Set;
@@ -25,7 +26,9 @@ public class Branch {
 
     private String phoneNumber;
 
-    private String deliveryZone;
+    private String deliveryZoneUrl;
+
+    private String deliveryStreets;
 
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)

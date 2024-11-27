@@ -11,6 +11,7 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
+import oshi.util.tuples.Pair;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.LikesRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
@@ -27,7 +28,9 @@ import ru.tusur.ShaurmaWebSiteProject.ui.themes.CheckboxTheme;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils.getImageResource;
 
@@ -103,7 +106,8 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         Set<ProductOption> productOptions = product.getProductOptions();
         String[] labels = productOptions.stream().map(ProductOption::getName).toArray(String[]::new);
         String[] descriptions = productOptions.stream().map(productOption -> productOption.getMass() + "г +" + productOption.getPrice() + " ₽").toArray(String[]::new);
-        CheckboxGroup<String> options = new Checkboxes("Добавки", labels, descriptions, CheckboxTheme.DIVIDERS, CheckboxTheme.ALIGN_RIGHT);
+        Pair<String[], String[]> pair = new Pair<>(labels, descriptions);
+        CheckboxGroup<String> options = new Checkboxes("Добавки", pair, CheckboxTheme.DIVIDERS, CheckboxTheme.ALIGN_RIGHT);
 
         IntegerField quantity = new IntegerField("Количество");
         quantity.setStepButtonsVisible(true);
@@ -113,6 +117,7 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         Button add = new Button("В корзину");
         add.addClickListener(event -> {
             OrderContent orderContent = new OrderContent();
+            product.setProductOptions(productOptions.stream().filter(productOption -> options.getSelectedItems().contains(productOption.getName())).collect(Collectors.toSet()));
             orderContent.setNum(quantity.getValue());
             orderContent.setProduct(product);
             shopCartService.addOrderContent(VaadinService.getCurrentRequest().getWrappedSession().getId(), orderContent);

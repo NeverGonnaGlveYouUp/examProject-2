@@ -43,7 +43,7 @@ public class KeyValuePair extends Layout {
     }
 
     public void setValue(String newValue){
-        value = new DescriptionList.Description(new Text(newValue));;
+        value.setText(newValue);
     }
 
     /**

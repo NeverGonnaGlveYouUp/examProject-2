@@ -37,6 +37,10 @@ public class Order {
 
     private BigDecimal sum;
 
+    private String targetAddress;
+
+    private Integer massSum;
+
     @Enumerated(EnumType.STRING)
     private OrderState orderState;
 }

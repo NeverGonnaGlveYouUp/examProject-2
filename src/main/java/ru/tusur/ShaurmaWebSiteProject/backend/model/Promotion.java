@@ -3,7 +3,9 @@ package ru.tusur.ShaurmaWebSiteProject.backend.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.jetbrains.annotations.Nullable;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -37,7 +39,9 @@ public class Promotion{
     private String condition;
 
     @NotNull
-    private String promotionEffect;
+    private BigDecimal promotionEffect;
+
+//    private Product product;
 
     @OneToMany(mappedBy = "promotion")
     private Set<Order> orders;

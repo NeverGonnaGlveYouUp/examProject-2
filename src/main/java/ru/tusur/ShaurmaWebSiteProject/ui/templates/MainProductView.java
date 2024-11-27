@@ -243,7 +243,7 @@ public class MainProductView extends Main implements LazyPlaceholder {
                                                 product.getPreviewUrl(),
                                                 product.getName(),
                                                 product.getName(),
-                                                product.getPrice().toString(),
+                                                product.getPrice().toString() + " ₽",
                                                 span,
                                                 createIconButton(LineAwesomeIcon.HEART, "Избранное")
                                         );

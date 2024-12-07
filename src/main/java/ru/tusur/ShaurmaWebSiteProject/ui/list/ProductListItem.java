@@ -4,7 +4,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
+import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 
 import static ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils.getImageResource;
@@ -21,7 +23,11 @@ public class ProductListItem extends com.vaadin.flow.component.html.ListItem {
     private Layout actions;
 
     public ProductListItem(String src, String alt, String primary, String secondary, Span third, Component... actions) {
-        this(new Image(getImageResource(src), alt), new Text(primary), new Text(secondary), third, actions);
+        StreamResource imageResource = getImageResource(src);
+        Image image;
+        if (imageResource != null) image = new Image(imageResource, alt);
+        else image = new Image("line-awesome/svg/" + LineAwesomeIcon.FILE_IMAGE.getSvgName()  + ".svg", "placeholder");
+        this(image, new Text(primary), new Text(secondary), third, actions);
     }
 
 

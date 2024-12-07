@@ -14,7 +14,6 @@ import java.util.Set;
 @AllArgsConstructor
 @Entity
 @Getter
-@ToString
 @Setter
 @Table
 public class Product {
@@ -24,13 +23,11 @@ public class Product {
 
     private String name;
 
-    @NotNull
     private String previewUrl;
 
     private BigDecimal price;
 
     private Integer mass;
-
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -55,6 +52,11 @@ public class Product {
     @MapKeyColumn(name = "content_name")
     @Column(name = "content_mass")
     private Map<String, Integer> contentMap = new HashMap<>();
+
+    @Override
+    public String toString() {
+        return name;
+    }
 
     @Override
     public boolean equals(Object o) {

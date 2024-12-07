@@ -37,7 +37,7 @@ public class ShoppingCartListItem extends ListItem {
 
         this.shopCartService = shopCartService;
         Product product = orderContent.getProduct();
-        addClassNames(AlignItems.START, Display.FLEX, FlexDirection.COLUMN, FlexDirection.Breakpoint.Large.ROW, Gap.LARGE, Padding.Vertical.LARGE, Position.RELATIVE);
+        addClassNames(AlignItems.START, Display.FLEX, FlexDirection.ROW, FlexDirection.Breakpoint.Large.ROW, Gap.LARGE, Padding.Vertical.LARGE, Position.RELATIVE);
 
         this.image = new Image(ImageResourceUtils.getImageResource(product.getPreviewUrl()), product.getName());
         this.image.addClassNames(BorderRadius.LARGE);
@@ -106,8 +106,8 @@ public class ShoppingCartListItem extends ListItem {
                 updateParentSummaryData(massDelta, priceDelta, true);
             }
             else {
-                mass.setText(newMass + " г");
-                price.setText(newPrice + " ₽");
+                mass.setText(STR."\{newMass} г");
+                price.setText(STR."\{newPrice} ₽");
                 updateParentSummaryData(massDelta, priceDelta, false);
                 shopCartService.changeOrderContentNum(session, orderContent);
             }

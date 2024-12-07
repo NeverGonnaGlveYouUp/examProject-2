@@ -20,13 +20,10 @@ public class Promotion{
     @Id
     private Long id;
 
-    @NotNull
     private String promotionPreviewUrl;
 
-    @NotNull
     private String promotionMainUrl;
 
-    @NotNull
     private String name;
 
     @Column(columnDefinition = "TEXT")
@@ -38,7 +35,6 @@ public class Promotion{
     @NotNull
     private String condition;
 
-    @NotNull
     private BigDecimal promotionEffect;
 
 //    private Product product;

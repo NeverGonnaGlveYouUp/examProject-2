@@ -39,7 +39,7 @@ public class Order {
 
     private String targetAddress;
 
-    private Integer massSum;
+    private Integer massSum = 0;
 
     @Enumerated(EnumType.STRING)
     private OrderState orderState;

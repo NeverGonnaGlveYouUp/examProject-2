@@ -222,16 +222,15 @@ public class MainProductView extends Main implements LazyPlaceholder {
 
                 DecimalFormat df = new DecimalFormat("#.##");
                 double ratingValue = product.getReviews().stream().mapToInt(Review::getGrade).sum() / (double) product.getReviews().size();
-
                 Span span = new Span();
                 span.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Display.FLEX, LumoUtility.Gap.SMALL);
                 span.getElement().setAttribute("aria-hidden", "true");
 
+                if (Double.isNaN(ratingValue)) ratingValue = 0d;
                 Badge badge = new Badge();
                 badge.addThemeVariants(BadgeVariant.CONTRAST, BadgeVariant.SMALL, BadgeVariant.PILL);
                 badge.setText(df.format(ratingValue));
                 span.add(StarsUtils.getStars(ratingValue), badge);
-
 
                 list.add(
                         new LazyContainer<>(
@@ -243,9 +242,8 @@ public class MainProductView extends Main implements LazyPlaceholder {
                                                 product.getPreviewUrl(),
                                                 product.getName(),
                                                 product.getName(),
-                                                product.getPrice().toString() + " ₽",
-                                                span,
-                                                createIconButton(LineAwesomeIcon.HEART, "Избранное")
+                                                product.getPrice().toString() + " ₽ " + product.getMass().toString() + " г",
+                                                span
                                         );
                                         productListItem.addClickListener(event -> UI.getCurrent().navigate(ProductDetailsView.class, product.getName()));
                                         div.add(productListItem);

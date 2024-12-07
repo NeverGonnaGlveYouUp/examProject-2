@@ -86,7 +86,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         layout.setGap(Layout.Gap.SMALL);
 
         if (userDetails == null) layout.add(span);
-        else layout.add(span, getButton());
+        else layout.add(span);
 
         return layout;
     }

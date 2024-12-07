@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 public enum DeliveryType {
 
     PICK_UP("Самовывоз"),
-    COURIER("Курьер");
+    COURIER("Доставка");
 
     private final String string;
 }

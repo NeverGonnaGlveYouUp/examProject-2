@@ -7,18 +7,23 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Header;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
+import ru.tusur.ShaurmaWebSiteProject.backend.service.MyRestController;
 import ru.tusur.ShaurmaWebSiteProject.ui.templates.*;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Badge;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Item;
@@ -30,8 +35,11 @@ import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.BadgeVariant;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import static org.springframework.http.HttpStatus.CREATED;
 public class MainLayout extends AppLayout {
     private final SecurityService securityService;
     private UserDetails userDetails;
@@ -98,18 +106,14 @@ public class MainLayout extends AppLayout {
     }
 
     private void addDrawerContent() {
-        Span appName = new Span("Vaadin+");
-        appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.FontWeight.SEMIBOLD);
-
         Layout nav = new Layout(createTemplatesNavigation());
         nav.setFlexDirection(Layout.FlexDirection.COLUMN);
         nav.setGap(Layout.Gap.MEDIUM);
 
         Scroller scroller = new Scroller(nav);
 
-        addToDrawer(new Header(appName), scroller);
+        addToDrawer(scroller);
     }
-
 
     private SideNav createTemplatesNavigation() {
         SideNav nav = new SideNav();
@@ -118,11 +122,12 @@ public class MainLayout extends AppLayout {
         nav.addItem(new SideNavItem("Оплата", CheckoutView.class, LineAwesomeIcon.CREDIT_CARD.create()));
         if(userDetails!=null)nav.addItem(new SideNavItem("Профиль", ProfileView.class, LineAwesomeIcon.USER.create()));
         if(userDetails!=null && Objects.equals(userDetails.getRole(), Roles.ADMIN)){
-            nav.addItem(new SideNavItem("Таблица товара", AdminPanelGrid.class, LineAwesomeIcon.DATABASE_SOLID.create()));
+            nav.addItem(new SideNavItem("Таблица товара", AdminPanelProductGrid.class, LineAwesomeIcon.DATABASE_SOLID.create()));
+            nav.addItem(new SideNavItem("Таблица добавок", AdminPanelProductsOptionsGrid.class, LineAwesomeIcon.COFFEE_SOLID.create()));
             nav.addItem(new SideNavItem("Таблица акций", AdminPanelPromotionGrid.class, LineAwesomeIcon.FILE_ALT.create()));
             nav.addItem(new SideNavItem("Таблица филиалов", AdminPanelBranchGrid.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
+            nav.addItem(new SideNavItem("чат", Chat.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
         }
-
         return nav;
     }
 

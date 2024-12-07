@@ -1,6 +1,7 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.config;
 
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +20,7 @@ import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @EnableWebSecurity
@@ -51,6 +53,9 @@ class SecurityConfig extends VaadinWebSecurity {
 
     @Autowired
     BranchRepo branchRepo;
+
+    @Autowired
+    PromotionRepo promotionRepo;
 
     @Autowired
     ReviewRepo reviewRepo;
@@ -114,27 +119,81 @@ class SecurityConfig extends VaadinWebSecurity {
         productTypeEntityRepo.save(productType);
         productTypeEntityRepo.save(productType1);
 
+        Date date = new Date();
+
         Branch branch = new Branch();
-        branch.setAddress("Улица Вершинина, 38");
+        branch.setDeliveryStreets("Вершинина; Петропавловская; Фёдора Лыткина;");
+        branch.setAddress("Вершинина, 38");
         branch.setPhoneNumber("222-333-44-55");
-        branch.setOpenFrom(new Date());
-        branch.setOpenTill(new Date());
+        branch.setOpenFrom(date);
+        branch.setOpenTill(DateUtils.addHours(date, 9));
         branchRepo.save(branch);
 
         Branch branch1 = new Branch();
+        branch1.setDeliveryStreets("Вершинина; Петропавловская; Фёдора Лыткина;");
         branch1.setAddress("Тверская, 81");
         branch1.setPhoneNumber("123-345-67-89");
-        branch1.setOpenFrom(new Date());
-        branch1.setOpenTill(new Date());
+        branch1.setOpenFrom(date);
+        branch1.setOpenTill(DateUtils.addHours(date, 3));
         branchRepo.save(branch1);
 
         Branch branch2 = new Branch();
-        branch2.setAddress("Улица Гоголя, 67");
+        branch2.setDeliveryStreets("Вершинина; Петропавловская; Фёдора Лыткина;");
+        branch2.setAddress("Гоголя, 67");
         branch2.setPhoneNumber("666-123-66-11");
-        branch2.setOpenFrom(new Date());
-        branch2.setOpenTill(new Date());
+        branch2.setOpenFrom(date);
+        branch2.setOpenTill(DateUtils.addHours(date, 8));
         branchRepo.save(branch2);
 
+        Promotion promotion = new Promotion();
+        promotion.setCondition("FREED300");
+        promotion.setDescription(PromotionType.FREE_DELIVERY_BY_CODE.getDescription());
+        promotion.setPromotionType(PromotionType.FREE_DELIVERY_BY_CODE);
+        promotionRepo.save(promotion);
+
+        Promotion promotion1 = new Promotion();
+        promotion1.setCondition("FREED300");
+        promotion1.setDescription(PromotionType.CONSTANT_DISCOUNT_BY_CODE.getDescription());
+        promotion1.setPromotionType(PromotionType.CONSTANT_DISCOUNT_BY_CODE);
+        promotionRepo.save(promotion1);
+
+        ProductOption productOption = new ProductOption();
+        productOption.setPrice(new BigDecimal("33"));
+        productOption.setName("Сыр L");
+        productOption.setMass(30);
+        productOptionRepo.save(productOption);
+
+        ProductOption productOption1 = new ProductOption();
+        productOption1.setPrice(new BigDecimal("66"));
+        productOption1.setName("Сыр XL");
+        productOption1.setMass(60);
+        productOptionRepo.save(productOption1);
+
+        ProductOption productOption2 = new ProductOption();
+        productOption2.setPrice(new BigDecimal("99"));
+        productOption2.setName("Сыр XXL");
+        productOption2.setMass(90);
+        productOptionRepo.save(productOption2);
+
+        ProductOption productOption3 = new ProductOption();
+        productOption3.setPrice(new BigDecimal("10"));
+        productOption3.setName("Халапеньо L");
+        productOption3.setMass(10);
+        productOptionRepo.save(productOption3);
+
+        ProductOption productOption4 = new ProductOption();
+        productOption4.setPrice(new BigDecimal("20"));
+        productOption4.setName("Халапеньо XL");
+        productOption4.setMass(20);
+        productOptionRepo.save(productOption4);
+
+        ProductOption productOption5 = new ProductOption();
+        productOption5.setPrice(new BigDecimal("40"));
+        productOption5.setName("Лук");
+        productOption5.setMass(35);
+        productOptionRepo.save(productOption5);
+
+        HashSet<Product> productHashSet = new HashSet<>();
         for (int i = 0; i < 10; i++) {
             Product product = new Product();
             product.setName("Шаверма из кота V" + i);
@@ -179,6 +238,10 @@ class SecurityConfig extends VaadinWebSecurity {
             product1.setProductType(productType1);
             product1.setDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.");
             productRepo.save(product1);
+
+            productHashSet.add(product);
+            productHashSet.add(product1);
+
             HashSet<Review> reviews1 = new HashSet<>();
             for (int l = 0; l < 7; l++) {
                 Review review = new Review();
@@ -192,48 +255,6 @@ class SecurityConfig extends VaadinWebSecurity {
             }
             product1.setReviews(reviews1);
             productRepo.save(product1);
-
-            ProductOption productOption = new ProductOption();
-            productOption.setPrice(new BigDecimal("33"));
-            productOption.setName("Сыр L");
-            productOption.setMass(30);
-            productOption.setProductSet(Set.of(product, product1));
-            productOptionRepo.save(productOption);
-
-            ProductOption productOption1 = new ProductOption();
-            productOption1.setPrice(new BigDecimal("66"));
-            productOption1.setName("Сыр XL");
-            productOption1.setMass(60);
-            productOption1.setProductSet(Set.of(product, product1));
-            productOptionRepo.save(productOption1);
-
-            ProductOption productOption2 = new ProductOption();
-            productOption2.setPrice(new BigDecimal("99"));
-            productOption2.setName("Сыр XXL");
-            productOption2.setMass(90);
-            productOption2.setProductSet(Set.of(product, product1));
-            productOptionRepo.save(productOption2);
-
-            ProductOption productOption3 = new ProductOption();
-            productOption3.setPrice(new BigDecimal("10"));
-            productOption3.setName("Халапеньо L");
-            productOption3.setMass(10);
-            productOption3.setProductSet(Set.of(product, product1));
-            productOptionRepo.save(productOption3);
-
-            ProductOption productOption4 = new ProductOption();
-            productOption4.setPrice(new BigDecimal("20"));
-            productOption4.setName("Халапеньо XL");
-            productOption4.setMass(20);
-            productOption4.setProductSet(Set.of(product, product1));
-            productOptionRepo.save(productOption4);
-
-            ProductOption productOption5 = new ProductOption();
-            productOption5.setPrice(new BigDecimal("40"));
-            productOption5.setName("Лук");
-            productOption5.setMass(35);
-            productOption5.setProductSet(Set.of(product, product1));
-            productOptionRepo.save(productOption5);
 
             BranchProduct branchProduct = new BranchProduct();
             branchProduct.setHide(false);
@@ -250,5 +271,17 @@ class SecurityConfig extends VaadinWebSecurity {
             branchProductRepo.save(branchProduct1);
 
         }
+        productOption.setProductSet(productHashSet);
+        productOptionRepo.save(productOption);
+        productOption1.setProductSet(productHashSet);
+        productOptionRepo.save(productOption1);
+        productOption2.setProductSet(productHashSet);
+        productOptionRepo.save(productOption2);
+        productOption3.setProductSet(productHashSet);
+        productOptionRepo.save(productOption3);
+        productOption4.setProductSet(productHashSet);
+        productOptionRepo.save(productOption4);
+        productOption5.setProductSet(productHashSet);
+        productOptionRepo.save(productOption5);
     }
 }

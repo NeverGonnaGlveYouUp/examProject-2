@@ -7,7 +7,7 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import org.apache.commons.lang3.ArrayUtils;
-import oshi.util.tuples.Pair;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.Pair;
 
 import java.util.Arrays;
 

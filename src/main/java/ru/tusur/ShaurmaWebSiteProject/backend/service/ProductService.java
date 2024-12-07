@@ -23,14 +23,8 @@ public class ProductService {
     @Autowired
     private BranchProductRepo branchProductRepo;
 
-//    @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
-//    public List<BranchProduct> findAllByBranch(Branch branch, ProductTypeEntity productType) {
-//        return branchProductRepo.findAllasdByBranch(branch, productType);
-//    }
-
     @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
     public Product add(Product product) {
-        System.out.println("asdasdAdd");
         return productRepo.save(product);
     }
 
@@ -39,7 +33,6 @@ public class ProductService {
             @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
     })
     public Product update(Product product) {
-        System.out.println("asdasdUpdate");
         return productRepo.save(product);
     }
 
@@ -48,19 +41,16 @@ public class ProductService {
             @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
     })
     public void delete(Product product) {
-        System.out.println("asdasdDel");
         productRepo.delete(product);
     }
 
     @Cacheable(value = SimpleCacheCustomizer.PRODUCTS, key = "#productType.id")
     public List<Product> findByProductTypeOrderByRankAsc(ProductTypeEntity productType) {
-        System.out.println("asdasd");
         return productRepo.findByProductTypeOrderByRankAsc(productType);
     }
 
     @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#id")
     public Optional<Product> findById(Long id) {
-        System.out.println("asdasdById");
         return productRepo.findById(id);
     }
 }

@@ -1,10 +1,8 @@
 package ru.tusur.ShaurmaWebSiteProject.ui.templates;
 
 import com.vaadin.flow.component.*;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.icon.SvgIcon;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
@@ -19,15 +17,12 @@ import ru.tusur.ShaurmaWebSiteProject.backend.model.OrderContent;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductOption;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ShopCartService;
-import ru.tusur.ShaurmaWebSiteProject.ui.components.InputGroup;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.KeyValuePair;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.KeyValuePairs;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 import ru.tusur.ShaurmaWebSiteProject.ui.list.MyComponentList;
 import ru.tusur.ShaurmaWebSiteProject.ui.list.ShoppingCartListItem;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
-import ru.tusur.ShaurmaWebSiteProject.ui.themes.ButtonTheme;
-import ru.tusur.ShaurmaWebSiteProject.ui.themes.InputTheme;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -142,16 +137,8 @@ public class ShoppingCartView extends Main {
         pairs.removeBackgroundColor();
         pairs.removeHorizontalPadding();
 
-        TextField code = new TextField("Введите промо код");
-        code.addClassNames(Flex.GROW);
-        code.addThemeName(InputTheme.OUTLINE);
-
-        Button apply = new Button("Применить");
-        apply.addClassNames(Background.BASE);
-        apply.addThemeName(ButtonTheme.OUTLINE);
-
         SvgIcon icon = LineAwesomeIcon.INFO_SOLID.create();
-        Paragraph text = new Paragraph("Стоимость доставки и промо код будут расчитаннны при оплате.");
+        Paragraph text = new Paragraph("Стоимость доставки будет рассчитана при оплате.");
 
         info.setFlexDirection(Layout.FlexDirection.ROW);
         info.setGap(Layout.Gap.MEDIUM);
@@ -159,13 +146,11 @@ public class ShoppingCartView extends Main {
         info.setJustifyContent(Layout.JustifyContent.CENTER);
         info.add(icon, text);
 
-        InputGroup inputGroup = new InputGroup(code, apply);
-
         RouterLink checkout = new RouterLink("Оплата", CheckoutView.class);
         checkout.addClassNames(AlignItems.CENTER, Background.PRIMARY, BorderRadius.MEDIUM, Display.FLEX,
                 FontWeight.SEMIBOLD, Height.MEDIUM, JustifyContent.CENTER, TextColor.PRIMARY_CONTRAST);
 
-        Layout layout = new Layout(title, pairs, info, inputGroup, checkout);
+        Layout layout = new Layout(title, pairs, info, checkout);
         layout.addClassNames(Background.CONTRAST_5, BorderRadius.LARGE, Padding.LARGE);
         layout.setBoxSizing(Layout.BoxSizing.BORDER);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);

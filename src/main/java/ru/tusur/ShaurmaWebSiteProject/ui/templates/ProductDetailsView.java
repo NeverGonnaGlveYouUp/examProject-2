@@ -11,8 +11,8 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
-import oshi.util.tuples.Pair;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.LikesRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
@@ -25,6 +25,7 @@ import ru.tusur.ShaurmaWebSiteProject.ui.list.ProductReviewListItem;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.HomeView;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
 import ru.tusur.ShaurmaWebSiteProject.ui.themes.CheckboxTheme;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.Pair;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
 import java.text.DecimalFormat;
@@ -43,12 +44,14 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
     private Product product;
     private final UserDetails userDetails;
     private final ShopCartService shopCartService;
+    private final BranchRepo branchRepo;
 
-    public ProductDetailsView(ProductRepo productRepo, LikesRepo likesRepo, SecurityService securityService, ShopCartService shopCartService) {
+    public ProductDetailsView(ProductRepo productRepo, LikesRepo likesRepo, SecurityService securityService, ShopCartService shopCartService, BranchRepo branchRepo) {
         this.productRepo = productRepo;
         this.likesRepo = likesRepo;
         this.userDetails = securityService.getAuthenticatedUser();
         this.shopCartService = shopCartService;
+        this.branchRepo = branchRepo;
         addClassNames(Display.FLEX, FlexWrap.WRAP_REVERSE, JustifyContent.CENTER);
     }
 
@@ -78,7 +81,7 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
 
         Span starsText = new Span(df.format(ratingValue) + " | Количество отзывов: " + product.getReviews().size());
         starsText.addClassNames(FontSize.SMALL, Margin.Start.XSMALL);
-
+        if (Double.isNaN(ratingValue)) ratingValue = 0d;
         Layout rating = new Layout(StarsUtils.getStars(ratingValue));
         rating.addClassNames(TextColor.PRIMARY);
 
@@ -116,8 +119,10 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
 
         Button add = new Button("В корзину");
         add.addClickListener(event -> {
+            //todo add branch selector
             OrderContent orderContent = new OrderContent();
             product.setProductOptions(productOptions.stream().filter(productOption -> options.getSelectedItems().contains(productOption.getName())).collect(Collectors.toSet()));
+            orderContent.setBranch(branchRepo.findById(1L).orElseThrow());
             orderContent.setNum(quantity.getValue());
             orderContent.setProduct(product);
             shopCartService.addOrderContent(VaadinService.getCurrentRequest().getWrappedSession().getId(), orderContent);

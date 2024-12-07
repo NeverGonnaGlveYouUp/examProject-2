@@ -35,22 +35,12 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     public void checkCredentials(String username, String password) throws AuthException {
-        //State auth
-//        UserDetails userDetails = loadUserByUsername(username);
-        //Stateless auth
         User userDetails = loadUserByUsername(username);
         if (!passwordEncoder.matches(password, userDetails.getPassword()))
             throw new AuthException("Что-то пошло не так, попробуйте снова.");
         VaadinSession.getCurrent().setAttribute(String.valueOf(UserDetails.class), userDetails);
     }
 
-    //State auth
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        return userDetailsRepo.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(username));
-//    }
-
-    //Stateless auth
     @Override
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<UserDetails> user = userDetailsRepo.findByUsername(username);

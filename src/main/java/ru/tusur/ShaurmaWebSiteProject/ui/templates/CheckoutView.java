@@ -4,6 +4,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.html.*;
@@ -11,19 +12,21 @@ import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.radiobutton.RadioButtonGroup;
-import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.component.textfield.EmailField;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
 import org.antlr.v4.runtime.misc.OrderedHashSet;
+import org.antlr.v4.runtime.misc.Pair;
+import org.apache.commons.lang3.time.DateUtils;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.PromotionService;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ShopCartService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.*;
@@ -35,12 +38,14 @@ import ru.tusur.ShaurmaWebSiteProject.ui.utils.Breakpoint;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.Size;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 
 @AnonymousAllowed
 @PageTitle("Оплата")
@@ -49,12 +54,23 @@ public class CheckoutView extends Main {
 
     private final ShopCartService shopCartService;
     private final PromotionService promotionService;
+    private final BranchRepo branchRepo;
     private final Order order;
+    private final List<Branch> branches;
 
     private final KeyValuePair productsSumPriceBucket = new KeyValuePair("Сумма товаров", "-");
     private final KeyValuePair discountBucket = new KeyValuePair("Скидка", "-");
     private final KeyValuePair deliveryPriceBucket = new KeyValuePair("Доставка", "-");
     private final KeyValuePair orderSumPriceBucket = new KeyValuePair("Всего", "-");
+    private final TextField address = new TextField("Адресс");
+    private final TextField phone = new TextField("Телефон");
+    private final EmailField email = new EmailField("Email");
+    private final DateTimePicker dateTimePicker = new DateTimePicker();
+    private final ComboBox<Branch> branchSelectorComboBox = new ComboBox<>("Филиал выдачи заказа");
+    private final Layout branchInfo = new Layout();
+    private final Span branchPhone = new Span("-");
+    private final Span branchOpenTime = new Span("-");
+    private final H2 title = new H2("Данные доставки");
 
     private BigDecimal productsSumPrice = BigDecimal.ZERO;
     private BigDecimal deliveryPrice = BigDecimal.ZERO;
@@ -62,22 +78,15 @@ public class CheckoutView extends Main {
     private BigDecimal discountValue = BigDecimal.ZERO;
 
 
-    public CheckoutView(ShopCartService shopCartService, PromotionService promotionService) {
+    public CheckoutView(ShopCartService shopCartService, PromotionService promotionService, BranchRepo branchRepo) {
         this.shopCartService = shopCartService;
         this.promotionService = promotionService;
+        this.branchRepo = branchRepo;
         this.order = new Order();
+        this.branches = branchRepo.findAll();
         addClassNames(BoxSizing.BORDER, Display.FLEX, FlexDirection.COLUMN, FlexDirection.Breakpoint.Medium.ROW,
                 Margin.Horizontal.AUTO, MaxWidth.SCREEN_LARGE);
         add(createForm(), createSummary());
-    }
-
-    public static LocalDate getNextBusinessDay(LocalDate date) {
-        if (date.getDayOfWeek() == DayOfWeek.SATURDAY) {
-            date = date.plusDays(2);
-        } else if (date.getDayOfWeek() == DayOfWeek.SUNDAY) {
-            date = date.plusDays(1);
-        }
-        return date;
     }
 
     private Component createForm() {
@@ -89,18 +98,51 @@ public class CheckoutView extends Main {
     }
 
     private Component createShippingInformation() {
-        H2 title = new H2("Данные доставки");
         title.addClassNames(FontSize.XLARGE, Margin.Bottom.SMALL, Margin.Top.MEDIUM);
+        branchSelectorComboBox.getStyle().set("--vaadin-combo-box-overlay-width", "250px");
 
-        TextField address = new TextField("Адресс");
-//        address.addValueChangeListener(event -> {
-//            deliveryPrice = promotionService.getDeliveryPrice();
-//        });
+        AtomicReference<Branch> selectedBranch = new AtomicReference<>();
 
-        TextField phone = new TextField("Телефон");
+        SimpleDateFormat sdf = new SimpleDateFormat("hh:mm");
+        ComboBox.ItemFilter<Branch> filter = (branch, filterString) -> (branch.getAddress()).toLowerCase().contains(filterString.toLowerCase());
+        branchSelectorComboBox.setWidth("fit-content");
+        branchSelectorComboBox.setItems(filter, branches);
+        branchSelectorComboBox.setItemLabelGenerator(Branch::getAddress);
+        branchSelectorComboBox.setVisible(false);
+        branchSelectorComboBox.setAllowCustomValue(false);
+        branchSelectorComboBox.addValueChangeListener(event -> {
+            selectedBranch.set(event.getValue());
+            branchPhone.setText(event.getValue().getPhoneNumber());
+            branchOpenTime.setText("Открыто с " + sdf.format(event.getValue().getOpenFrom()) + " до " + sdf.format(event.getValue().getOpenTill()));
+        });
+
+        branchPhone.getStyle().setPaddingLeft("4px");
+        branchPhone.getStyle().setPaddingRight("8px");
+        branchOpenTime.getStyle().setPaddingLeft("4px");
+        branchOpenTime.getStyle().setPaddingRight("8px");
+
+        branchInfo.setColumnGap(Layout.Gap.SMALL);
+        branchInfo.setRowGap(Layout.Gap.MEDIUM);
+        branchInfo.addClassName(Display.INLINE_BLOCK);
+        branchInfo.getStyle().setPaddingTop("24px").setPaddingBottom("4px").setPaddingLeft("48px");
+        branchInfo.setColumns(Layout.GridColumns.COLUMNS_2);
+        Div divBranchPhone = new Div(LineAwesomeIcon.PHONE_SOLID.create(), branchPhone);
+        divBranchPhone.getStyle().set("width", "max-content");
+        Div divBranchTime = new Div(LineAwesomeIcon.CLOCK.create(), branchOpenTime);
+        divBranchTime.getStyle().set("width", "max-content");
+        branchInfo.add(divBranchPhone, divBranchTime);
+        branchInfo.setVisible(false);
+
+        address.addValueChangeListener(event -> {
+            BigDecimal oldDeliveryPrice = deliveryPrice;
+            order.setTargetAddress(address.getValue());
+            deliveryPrice = promotionService.getDeliveryPrice(order);
+            orderSumPrice = orderSumPrice.subtract(oldDeliveryPrice).add(deliveryPrice);
+            setSummaryData();
+        });
+
         phone.setPrefixComponent(LineAwesomeIcon.PHONE_SOLID.create());
 
-        EmailField email = new EmailField("Email");
         email.setPrefixComponent(LineAwesomeIcon.ENVELOPE.create());
 
 
@@ -111,8 +153,8 @@ public class CheckoutView extends Main {
         ruI18n.setToday("Сегодня");
         ruI18n.setCancel("Отмена");
 
-        DateTimePicker dateTimePicker = new DateTimePicker();
         dateTimePicker.setRequiredIndicatorVisible(true);
+        dateTimePicker.getChildren().findFirst().map(component -> component.getStyle().setPaddingRight("14px"));
         dateTimePicker.setLabel("Дата и время доставки");
         dateTimePicker.setHelperText("Должно быть в пределах 7 дней с сегодняшнего дня");
         dateTimePicker.setMin(LocalDateTime.now());
@@ -120,8 +162,17 @@ public class CheckoutView extends Main {
         dateTimePicker.setLocale(new Locale("ru", "RU"));
         dateTimePicker.setValue(LocalDateTime.now(ZoneId.systemDefault()));
         dateTimePicker.setDatePickerI18n(ruI18n);
-
-        Layout layout = new Layout(title, address, phone, email, dateTimePicker);
+        dateTimePicker.setHelperText("Формат: ДД/ММ/ГГГГ и ЧЧ:ММ");
+        dateTimePicker.setDatePlaceholder("ДД/ММ/ГГГГ");
+        dateTimePicker.setTimePlaceholder("ЧЧ:ММ");
+//        dateTimePicker.addValueChangeListener(event -> {
+//            Branch branch = selectedBranch.get();
+//            Date value = Date.from(event.getValue().atZone(ZoneId.systemDefault()).toInstant());;
+//            if (value.compareTo(DateUtils.addDays(branch.getOpenFrom(), LocalDateTime.ofInstant(branch.getOpenFrom().toInstant(), ZoneId.systemDefault()).getDayOfYear() - event.getValue().getDayOfYear())) >= 0 && value.compareTo(DateUtils.addDays(branch.getOpenTill(), LocalDateTime.ofInstant(branch.getOpenTill().toInstant(), ZoneId.systemDefault()).getDayOfYear() - event.getValue().getDayOfYear())) <= 0){
+//                dateTimePicker.setErrorMessage("Это время недоступно");
+//            }
+//        });
+        Layout layout = new Layout(title, address, phone, email, branchSelectorComboBox, branchInfo, dateTimePicker);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
         layout.setDisplay(Breakpoint.LARGE, Layout.Display.GRID);
         layout.setColumns(Layout.GridColumns.COLUMNS_4);
@@ -132,14 +183,34 @@ public class CheckoutView extends Main {
     }
 
     private Component createReceivingMethod() {
-        H2 title = new H2("Сопособ доставки");
+        H2 title = new H2("Сопособ получения заказа");
         title.addClassNames(FontSize.XLARGE, Margin.Bottom.SMALL, Margin.Top.XLARGE);
 
-        RadioButtonGroup<DeliveryType> receivingMethod = new RadioButtonGroup("Выберете сопособ доставки");
+        RadioButtonGroup<DeliveryType> receivingMethod = new RadioButtonGroup("Выберете сопособ получения заказа");
         receivingMethod.setItems(DeliveryType.values());
         receivingMethod.setRenderer(new ComponentRenderer<>(method -> renderDeliveryMethod(method)));
-        receivingMethod.setValue(DeliveryType.PICK_UP);
+        receivingMethod.setValue(DeliveryType.COURIER);
         setRadioButtonGroupTheme(receivingMethod, RadioButtonTheme.TOGGLE, RadioButtonTheme.EQUAL_WIDTH);
+        receivingMethod.addValueChangeListener(event -> {
+            if (event.getValue().equals(DeliveryType.COURIER)) {
+                address.setVisible(true);
+                phone.setVisible(true);
+                email.setVisible(true);
+                branchSelectorComboBox.setVisible(false);
+                branchInfo.setVisible(false);
+                dateTimePicker.setLabel("Дата и время доставки");
+                title.setText("Данные доставки");
+            } else if (event.getValue().equals(DeliveryType.PICK_UP)) {
+                address.setVisible(false);
+                phone.setVisible(false);
+                email.setVisible(false);
+                branchSelectorComboBox.setVisible(true);
+                branchInfo.setVisible(true);
+                dateTimePicker.setLabel("Дата и время забора заказа");
+                title.setText("Данные самовывоза");
+            }
+        });
+
 
         Layout layout = new Layout(title, receivingMethod);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
@@ -158,8 +229,7 @@ public class CheckoutView extends Main {
         switch (type) {
             case COURIER:
             default:
-                //todo put delivery price here
-                cost.setText("-");
+                cost.setText("");
                 break;
 
             case PICK_UP:
@@ -180,15 +250,29 @@ public class CheckoutView extends Main {
         H2 title = new H2("Платежная информация");
         title.addClassNames(FontSize.XLARGE, Margin.Bottom.SMALL, Margin.Top.XLARGE);
 
-        RadioButtonGroup<PaymentType> paymentMethod = new RadioButtonGroup("Способ оплаты");
-        paymentMethod.setItems(PaymentType.values());
-        paymentMethod.setRenderer(new ComponentRenderer<>(method -> renderPaymentMethod(method)));
-        paymentMethod.setValue(PaymentType.CARD);
-        setRadioButtonGroupTheme(paymentMethod, RadioButtonTheme.EQUAL_WIDTH, RadioButtonTheme.TOGGLE);
-
         TextField creditCard = new TextField("Номер карты");
         ExpirationDateField expiration = new ExpirationDateField("Дата окончания срока");
         TextField securityCode = new TextField("Код безопасности");
+
+        RadioButtonGroup<PaymentType> paymentMethod = new RadioButtonGroup<>("Способ оплаты");
+        paymentMethod.setItems(PaymentType.values());
+        paymentMethod.setRenderer(new ComponentRenderer<>(method -> renderPaymentMethod(method)));
+        paymentMethod.setValue(PaymentType.MASTERCARD_VISA);
+        paymentMethod.setHelperText(PaymentType.MASTERCARD_VISA.getDetails());
+        setRadioButtonGroupTheme(paymentMethod, RadioButtonTheme.EQUAL_WIDTH, RadioButtonTheme.TOGGLE);
+        paymentMethod.addValueChangeListener(event -> {
+            PaymentType paymentType = event.getValue();
+            if (paymentType.equals(PaymentType.SBP_ONLINE) || paymentType.equals(PaymentType.MASTERCARD_VISA)) {
+                securityCode.setEnabled(true);
+                expiration.setEnabled(true);
+                creditCard.setEnabled(true);
+            } else if (paymentType.equals(PaymentType.SBP) || paymentType.equals(PaymentType.CASH)) {
+                securityCode.setEnabled(false);
+                expiration.setEnabled(false);
+                creditCard.setEnabled(false);
+            }
+            paymentMethod.setHelperText(paymentType.getDetails());
+        });
 
         Layout layout = new Layout(title, paymentMethod, creditCard, expiration, securityCode);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
@@ -207,7 +291,7 @@ public class CheckoutView extends Main {
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
         layout.getStyle().setMarginBottom("auto").setPaddingTop("4px").setMarginLeft("auto").setMarginRight("auto");
         switch (type) {
-            case CARD, CARD_ONLINE, CASH-> {
+            case CASH -> {
                 SvgIcon icon = new SvgIcon("line-awesome/svg/" + type.getUrl() + ".svg");
                 layout.add(icon);
             }
@@ -217,7 +301,7 @@ public class CheckoutView extends Main {
                 img.getStyle().set("object-fit", "contain");
                 img.setMaxWidth(100, Unit.PERCENTAGE);
                 layout.add(img);
-            }
+            } case MASTERCARD_VISA -> layout.add(createCreditCard());
         }
         Span span = new Span(type.getName());
         span.addClassName(TextAlignment.CENTER);
@@ -225,20 +309,20 @@ public class CheckoutView extends Main {
         return layout;
     }
 
-//    private Component createCreditCard() {
-//        Image visa = new Image("https://upload.wikimedia.org/wikipedia/commons/d/d6/Visa_2021.svg", "Visa");
-//        visa.setMaxHeight(Size.LARGE);
-//        visa.setMaxWidth(100, Unit.PERCENTAGE);
-//
-//        Image mastercard = new Image("https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg", "Mastercard");
-//        mastercard.setMaxHeight(Size.LARGE);
-//        mastercard.setMaxWidth(100, Unit.PERCENTAGE);
-//
-//        Span images = new Span(visa, mastercard);
-//        images.addClassNames(AlignItems.CENTER, BoxSizing.BORDER, Display.GRID,
-//                Gap.SMALL, Grid.Column.COLUMNS_2, Padding.SMALL);
-//        return images;
-//    }
+    private Component createCreditCard() {
+        Image visa = new Image("https://upload.wikimedia.org/wikipedia/commons/d/d6/Visa_2021.svg", "Visa");
+        visa.setMaxHeight(Size.LARGE);
+        visa.setMaxWidth(100, Unit.PERCENTAGE);
+
+        Image mastercard = new Image("https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg", "Mastercard");
+        mastercard.setMaxHeight(Size.LARGE);
+        mastercard.setMaxWidth(100, Unit.PERCENTAGE);
+
+        Span images = new Span(visa, mastercard);
+        images.addClassNames(AlignItems.CENTER, BoxSizing.BORDER, Display.GRID,
+                Gap.SMALL, Grid.Column.COLUMNS_2, Padding.SMALL);
+        return images;
+    }
 
     private void setRadioButtonGroupTheme(RadioButtonGroup group, String... themeNames) {
         group.addThemeNames(themeNames);
@@ -258,9 +342,10 @@ public class CheckoutView extends Main {
         allOrderContent.forEach(orderContent -> {
             BigDecimal productPrice = orderContent.getProduct().getPrice();
             BigDecimal bigDNum = BigDecimal.valueOf(orderContent.getNum());
+            orderContent.setBranch(branches.getFirst());
             productsSumPrice = productsSumPrice.add(productPrice).add(orderContent.getProduct().getProductOptions().stream().map(ProductOption::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add)).multiply(bigDNum);
             order.setMassSum(order.getMassSum() + (orderContent.getProduct().getMass() * orderContent.getNum()));
-            //todo do delivery and discount
+            deliveryPrice = promotionService.getDeliveryPrice(order);
         });
         orderSumPrice = orderSumPrice.add(discountValue).add(productsSumPrice).add(deliveryPrice);
         order.setSum(orderSumPrice);
@@ -284,6 +369,11 @@ public class CheckoutView extends Main {
         Button apply = new Button("Применить");
         apply.addClassNames(Background.BASE);
         apply.addThemeName(ButtonTheme.OUTLINE);
+        apply.addClickListener(_ -> {
+            Pair<BigDecimal, Boolean> bigDecimalBooleanPair = promotionService.applyAndSavePromoCode(code.getValue(), order);
+            discountValue = bigDecimalBooleanPair.a;
+            if (!bigDecimalBooleanPair.b) discountValue = promotionService.getDeliveryPrice(order);
+        });
 
         InputGroup inputGroup = new InputGroup(code, apply);
 
@@ -313,6 +403,7 @@ public class CheckoutView extends Main {
             discountBucket.setValue("-" + discountValue + " ₽");
             productsSumPriceBucket.setValue(productsSumPrice + " ₽");
             orderSumPriceBucket.setValue(orderSumPrice + " ₽");
+            deliveryPriceBucket.setValue(String.valueOf(deliveryPrice));
         });
     }
 }

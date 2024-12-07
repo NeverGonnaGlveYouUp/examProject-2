@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Getter
 public enum PromotionType {
-    CONSTANT_DISCOUNT_BY_CODE(),
-    PERCENT_DISCOUNT_BY_CODE(),
-    GIFT(),
-    FREE_DELIVERY_BY_CODE(),
-    FREE_DELIVERY();
+    CONSTANT_DISCOUNT_BY_CODE("Константная скидка по коду"),
+    PERCENT_DISCOUNT_BY_CODE("Процентная скидка по коду"),
+    GIFT("Подарок"),
+    FREE_DELIVERY_BY_CODE("Бесплатная доставка по коду"),
+    FREE_DELIVERY("Бесплатная доставка");
+
+    private final String description;
 }
 

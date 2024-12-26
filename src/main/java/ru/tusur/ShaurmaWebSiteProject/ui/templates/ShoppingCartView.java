@@ -14,6 +14,7 @@ import lombok.Getter;
 import org.antlr.v4.runtime.misc.OrderedHashSet;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.OrderContent;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.OrderContentToProductOption;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductOption;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ShopCartService;
@@ -23,13 +24,14 @@ import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 import ru.tusur.ShaurmaWebSiteProject.ui.list.MyComponentList;
 import ru.tusur.ShaurmaWebSiteProject.ui.list.ShoppingCartListItem;
 import ru.tusur.ShaurmaWebSiteProject.ui.mainLayout.MainLayout;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.Pair;
 
 import java.math.BigDecimal;
 import java.util.Set;
 
 @AnonymousAllowed
-@PageTitle("Карзина")
-@Route(value = "Карзина", layout = MainLayout.class)
+@PageTitle("Корзина")
+@Route(value = "Корзина", layout = MainLayout.class)
 public class ShoppingCartView extends Main {
 
     private final ShopCartService shopCartService;
@@ -58,24 +60,26 @@ public class ShoppingCartView extends Main {
         title.addClassNames(FontSize.XLARGE, Margin.Top.XLARGE);
 
         list.addClassNames("divide-y");
-        OrderedHashSet<OrderContent> allOrderContent = shopCartService.getAllOrderContent(VaadinService.getCurrentRequest().getWrappedSession().getId());
+        OrderedHashSet<Pair<OrderContent, OrderContentToProductOption>> allOrderContent = shopCartService.getAllOrderContent(VaadinService.getCurrentRequest().getWrappedSession().getId());
         if (allOrderContent.isEmpty()) {
             list.add(createCartItemPlaceholder());
             info.setVisible(false);
         } else {
             allOrderContent.forEach(orderContent -> {
-                        Product product = orderContent.getProduct();
-                        int num = orderContent.getNum();
-                        Set<ProductOption> productOptions = product.getProductOptions();
-                        BigDecimal bGNum = BigDecimal.valueOf(num);
+                if(orderContent.getA().getNum() != 0){
+                    Product product = orderContent.getA().getProduct();
+                    int num = orderContent.getA().getNum();
+                    Set<ProductOption> productOptions = product.getProductOptions();
+                    BigDecimal bGNum = BigDecimal.valueOf(num);
 
-                        mass += (product.getMass() + productOptions.stream().mapToInt(ProductOption::getMass).sum()) * num;
-                        BigDecimal productOptionsSum = productOptions.stream().map(ProductOption::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+                    mass += (product.getMass() + productOptions.stream().mapToInt(ProductOption::getMass).sum()) * num;
+                    BigDecimal productOptionsSum = productOptions.stream().map(ProductOption::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-                        productsSumPrice = productsSumPrice.add(product.getPrice().add(productOptionsSum).multiply(bGNum));
-                        list.add(new ShoppingCartListItem(orderContent, shopCartService));
-                        info.setVisible(true);
-                    }
+                    productsSumPrice = productsSumPrice.add(product.getPrice().add(productOptionsSum).multiply(bGNum));
+                    list.add(new ShoppingCartListItem(orderContent.getA(), shopCartService));
+                    info.setVisible(true);
+                }
+            }
             );
         }
         setSummaryData();

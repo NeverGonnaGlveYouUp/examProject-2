@@ -113,11 +113,6 @@ public class ShoppingCartListItem extends ListItem {
             }
         });
 
-        Button favourite = new Button(LineAwesomeIcon.HEART.create());
-        favourite.addClassNames(TextColor.SECONDARY);
-        favourite.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-        favourite.setAriaLabel("Избранное");
-
         Button delete = new Button(LineAwesomeIcon.TRASH_SOLID.create());
         delete.addClassNames(TextColor.SECONDARY);
         delete.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
@@ -141,7 +136,7 @@ public class ShoppingCartListItem extends ListItem {
         });
 
 
-        Layout controls = new Layout(quantity, favourite, delete);
+        Layout controls = new Layout(quantity, delete);
         controls.addClassNames(Margin.Top.AUTO);
         controls.setGap(Layout.Gap.MEDIUM);
 

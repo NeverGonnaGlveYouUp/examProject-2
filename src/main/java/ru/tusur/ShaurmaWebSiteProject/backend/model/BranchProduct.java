@@ -27,7 +27,7 @@ public class BranchProduct {
     @JoinColumn(name = "branch_id")
     Branch branch;
 
-    boolean hide;
+    boolean hide = false;
 
     @Override
     public String toString() {

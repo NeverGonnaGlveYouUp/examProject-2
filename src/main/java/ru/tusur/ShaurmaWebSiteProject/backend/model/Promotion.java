@@ -20,10 +20,6 @@ public class Promotion{
     @Id
     private Long id;
 
-    private String promotionPreviewUrl;
-
-    private String promotionMainUrl;
-
     private String name;
 
     @Column(columnDefinition = "TEXT")
@@ -39,6 +35,9 @@ public class Promotion{
 
 //    private Product product;
 
-    @OneToMany(mappedBy = "promotion")
+//    @ManyToMany(mappedBy = "promotion")
+    @ManyToMany
     private Set<Order> orders;
+
+    private boolean hide = false;
 }

@@ -39,8 +39,8 @@ public class OrderContent {
 //    @JoinColumn(name = "order_content_product_option_id", referencedColumnName = "id")
 //    private OrderContentProductOption orderContentProductOption;
 
-    @OneToMany
-    private Set<ProductOption> productOptionSet;
+    @OneToOne
+    private OrderContentToProductOption orderContentToProductOption;
 
     int num = 0;
 
@@ -50,7 +50,7 @@ public class OrderContent {
         if (o == null || getClass() != o.getClass()) return false;
 
         OrderContent that = (OrderContent) o;
-        return Objects.equals(id, that.id) && product.equals(that.product) && Objects.equals(order, that.order) && Objects.equals(branch, that.branch) && Objects.equals(productOptionSet, that.productOptionSet);
+        return Objects.equals(id, that.id) && product.equals(that.product) && Objects.equals(order, that.order) && Objects.equals(branch, that.branch) && Objects.equals(orderContentToProductOption, that.orderContentToProductOption);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class OrderContent {
         result = 31 * result + product.hashCode();
         result = 31 * result + Objects.hashCode(order);
         result = 31 * result + Objects.hashCode(branch);
-        result = 31 * result + Objects.hashCode(productOptionSet);
+        result = 31 * result + Objects.hashCode(orderContentToProductOption);
         return result;
     }
 }

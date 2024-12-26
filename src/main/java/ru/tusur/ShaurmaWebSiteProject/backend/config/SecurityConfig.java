@@ -20,7 +20,6 @@ import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @EnableWebSecurity
@@ -37,7 +36,7 @@ class SecurityConfig extends VaadinWebSecurity {
     OrderContentRepo orderContentRepo;
 
     @Autowired
-    OrderRepo orderRepo;
+    OrderContentToProductOptionRepo orderRepo;
 
     @Autowired
     ProductTypeEntityRepo productTypeEntityRepo;
@@ -119,14 +118,14 @@ class SecurityConfig extends VaadinWebSecurity {
         productTypeEntityRepo.save(productType);
         productTypeEntityRepo.save(productType1);
 
-        Date date = new Date();
+        Date date = new Date(2880000);
 
         Branch branch = new Branch();
         branch.setDeliveryStreets("Вершинина; Петропавловская; Фёдора Лыткина;");
         branch.setAddress("Вершинина, 38");
         branch.setPhoneNumber("222-333-44-55");
         branch.setOpenFrom(date);
-        branch.setOpenTill(DateUtils.addHours(date, 9));
+        branch.setOpenTill(DateUtils.addHours(date, 6));
         branchRepo.save(branch);
 
         Branch branch1 = new Branch();
@@ -147,12 +146,18 @@ class SecurityConfig extends VaadinWebSecurity {
 
         Promotion promotion = new Promotion();
         promotion.setCondition("FREED300");
+        promotion.setName("FREED300");
+        promotion.setHide(false);
+        promotion.setPromotionEffect(new BigDecimal("0"));
         promotion.setDescription(PromotionType.FREE_DELIVERY_BY_CODE.getDescription());
         promotion.setPromotionType(PromotionType.FREE_DELIVERY_BY_CODE);
         promotionRepo.save(promotion);
 
         Promotion promotion1 = new Promotion();
         promotion1.setCondition("FREED300");
+        promotion1.setName("FREED300");
+        promotion1.setHide(false);
+        promotion1.setPromotionEffect(new BigDecimal("300"));
         promotion1.setDescription(PromotionType.CONSTANT_DISCOUNT_BY_CODE.getDescription());
         promotion1.setPromotionType(PromotionType.CONSTANT_DISCOUNT_BY_CODE);
         promotionRepo.save(promotion1);
@@ -194,10 +199,10 @@ class SecurityConfig extends VaadinWebSecurity {
         productOptionRepo.save(productOption5);
 
         HashSet<Product> productHashSet = new HashSet<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
             Product product = new Product();
-            product.setName("Шаверма из кота V" + i);
-            product.setPrice(new BigDecimal("350.99"));
+            product.setName("Шаверма V" + i);
+            product.setPrice(new BigDecimal("250.99").add(BigDecimal.valueOf(random.nextInt(3) * 25)));
             product.setPreviewUrl("src/main/resources/META-INF/resources/images/img.png");
             product.setRank(i);
             product.setProductType(productType);
@@ -207,9 +212,10 @@ class SecurityConfig extends VaadinWebSecurity {
             HashSet<Review> reviews = new HashSet<>();
             for (int j = 0; j < 7; j++) {
                 Review review = new Review();
-                review.setBranch(j % 2 == 0 ? branch : branch1);
+                review.setBranch(branch);
+//                review.setBranch(j % 2 == 0 ? branch : branch1);
                 review.setProduct(product);
-                review.setGrade(random.nextInt(5));
+                review.setGrade(random.nextInt(1, 6));
                 review.setUserDetails(j % 2 == 0 ? userDetails : userDetails1);
                 review.setContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
                 reviews.add(review);
@@ -230,8 +236,8 @@ class SecurityConfig extends VaadinWebSecurity {
             productRepo.save(product);
 
             Product product1 = new Product();
-            product1.setName("DONNER_KEBAB из кота V" + i);
-            product1.setPrice(new BigDecimal("350"));
+            product1.setName("донер-кебаб V" + i);
+            product1.setPrice(new BigDecimal("250.99").add(BigDecimal.valueOf(random.nextInt(3) * 25)));
             product1.setPreviewUrl("src/main/resources/META-INF/resources/images/1663705172_3-mykaleidoscope-ru-p-kebab-v-lavashe-yeda-krasivo-3-3345574924.jpg");
             product1.setRank(i);
             product1.setMass(390);
@@ -245,9 +251,9 @@ class SecurityConfig extends VaadinWebSecurity {
             HashSet<Review> reviews1 = new HashSet<>();
             for (int l = 0; l < 7; l++) {
                 Review review = new Review();
-                review.setBranch(l % 2 == 0 ? branch : branch2);
+                review.setBranch(branch);
                 review.setProduct(product1);
-                review.setGrade(random.nextInt(5));
+                review.setGrade(random.nextInt(1, 6));
                 review.setUserDetails(l % 2 == 0 ? userDetails : userDetails1);
                 review.setContent("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
                 reviews1.add(review);

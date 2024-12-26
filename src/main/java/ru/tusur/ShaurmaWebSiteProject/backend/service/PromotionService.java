@@ -1,7 +1,6 @@
 package ru.tusur.ShaurmaWebSiteProject.backend.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.misc.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
@@ -9,12 +8,16 @@ import org.springframework.stereotype.Service;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.PromotionRepo;
+import ru.tusur.ShaurmaWebSiteProject.ui.utils.Pair;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static ru.tusur.ShaurmaWebSiteProject.backend.model.PromotionType.FREE_DELIVERY;
+import static ru.tusur.ShaurmaWebSiteProject.backend.model.PromotionType.FREE_DELIVERY_BY_CODE;
 
 @Service
 @Slf4j
@@ -30,12 +33,11 @@ public class PromotionService {
     private final Map<Branch, Set<String>> branchAddressMap = new HashMap<>();
 
     //todo call this if branch is added or removed
-//    @PostConstruct
     @EventListener(value = ApplicationStartedEvent.class)
     public void createBranchAddressMap() {
         branchAddressMap.clear();
         branchRepo.findAll().forEach(branch -> {
-            branchAddressMap.put(branch, Arrays.stream(branch.getDeliveryStreets().split(";")).map(String::toLowerCase).collect(Collectors.toSet()));
+            branchAddressMap.put(branch, Arrays.stream(branch.getDeliveryStreets().split(";")).map(String::toLowerCase).map(s -> s.replaceAll("\\s+","")).collect(Collectors.toSet()));
         });
         ;
     }
@@ -45,38 +47,40 @@ public class PromotionService {
         Set<OrderContent> orderContents = order.getOrderContents();
         if (order.getTargetAddress() != null){
             orderContents.forEach(orderContent -> {
-                        branchAddressMap.get(orderContent.getBranch())
-                                .stream()
-                                .filter(s -> order.getTargetAddress()
-                                        .toUpperCase()
-                                        .contains(s))
-                                .forEach(s -> {
-                                    BigDecimal delivery = deliveryValue.get();
-                                    delivery = delivery.add(orderContent.getProduct().getPrice().multiply(BigDecimal.valueOf(0.1)));
-                                    deliveryValue.set(delivery);
-                                });
+                        for (String s : branchAddressMap.get(orderContent.getBranch())) {
+                            if (!order.getTargetAddress().toUpperCase().contains(s.toUpperCase())) {
+                                BigDecimal delivery = deliveryValue.get();
+                                delivery = delivery.add(orderContent.getProduct().getPrice().multiply(BigDecimal.valueOf(0.1)));
+                                deliveryValue.set(delivery);
+                            } else {
+                                deliveryValue.set(BigDecimal.valueOf(0));
+                                break;
+                            }
+                        }
                     }
             );
+            order.getPromotions()
+                    .stream()
+                    .map(Promotion::getPromotionType)
+                    .filter(promotionType -> promotionType.equals(FREE_DELIVERY_BY_CODE) || promotionType.equals(FREE_DELIVERY))
+                    .forEach(_ -> deliveryValue.set(BigDecimal.valueOf(0)));
         }
         return deliveryValue.get();
     }
 
-    public Pair<BigDecimal, Boolean> applyAndSavePromoCode(String pCode, Order order) {
-        List<Promotion> promotions = promotionRepo.findByCondition(pCode);
+    public Pair<BigDecimal, List<Promotion>> applyAndSavePromoCode(String pCode) {
+        List<Promotion> promotions = promotionRepo.findByConditionAndHide(pCode, false);
+        List<Promotion> promotionsToReturn = new ArrayList<>();
         AtomicReference<BigDecimal> discountValue = new AtomicReference<>(new BigDecimal(BigInteger.ZERO));
-        AtomicReference<Boolean> deliveryIsFree = new AtomicReference<>(Boolean.FALSE);
         promotions.forEach(promotion -> {
-            BigDecimal discount = discountValue.get();
-            Boolean delivery = deliveryIsFree.get();
             if (promotion.getPromotionType() == PromotionType.CONSTANT_DISCOUNT_BY_CODE && pCode.equals(promotion.getCondition())) {
-                discount = discount.add(promotion.getPromotionEffect());
-            } else if (promotion.getPromotionType() == PromotionType.FREE_DELIVERY_BY_CODE && pCode.equals(promotion.getCondition())) {
-                delivery = Boolean.TRUE;
+                discountValue.set(discountValue.get().subtract(promotion.getPromotionEffect()));
+                promotionsToReturn.add(promotion);
+            } else if (promotion.getPromotionType() == FREE_DELIVERY_BY_CODE && pCode.equals(promotion.getCondition())) {
+                promotionsToReturn.add(promotion);
             }
-            discountValue.set(discount);
-            deliveryIsFree.set(delivery);
         });
-        return new Pair<>(discountValue.get(), deliveryIsFree.get());
+        return new Pair<>(discountValue.get(), promotionsToReturn);
     }
 
 }

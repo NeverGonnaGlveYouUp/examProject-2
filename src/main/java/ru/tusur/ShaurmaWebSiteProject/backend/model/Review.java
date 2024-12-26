@@ -4,6 +4,8 @@ package ru.tusur.ShaurmaWebSiteProject.backend.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.Date;
 import java.util.Set;
@@ -24,6 +26,9 @@ public class Review {
     @Column(columnDefinition = "TEXT")
     private String content;
 
+    @Column(columnDefinition = "TEXT")
+    private String reason = "";
+
     private Integer grade;
 
     @ManyToOne
@@ -38,10 +43,14 @@ public class Review {
     @JoinColumn(name="branch_id", nullable=false)
     private Branch branch;
 
+    @Getter
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy="review")
     private Set<Likes> likes;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
     private Date date;
+
+    private boolean hide = false;
 }

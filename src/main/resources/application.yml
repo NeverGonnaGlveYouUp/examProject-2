@@ -19,11 +19,12 @@ spring:
     hibernate:
       schema_update:
         unique_constraint_strategy: RECREATE_QUIETLY
-#      ddl-auto: create
-      ddl-auto: create-drop
+      ddl-auto: create
+#      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
+        enable_lazy_load_no_trans: true
         schema_update:
           unique_constraint_strategy: RECREATE_QUIETLY
         format_sql: true

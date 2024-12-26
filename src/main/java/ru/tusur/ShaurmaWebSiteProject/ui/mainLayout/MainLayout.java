@@ -13,17 +13,10 @@ import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.lumo.LumoIcon;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.UserDetails;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
-import ru.tusur.ShaurmaWebSiteProject.backend.service.MyRestController;
 import ru.tusur.ShaurmaWebSiteProject.ui.templates.*;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Badge;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Item;
@@ -35,11 +28,8 @@ import ru.tusur.ShaurmaWebSiteProject.ui.security.LoginView;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.BadgeVariant;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.ImageResourceUtils;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import static org.springframework.http.HttpStatus.CREATED;
 public class MainLayout extends AppLayout {
     private final SecurityService securityService;
     private UserDetails userDetails;
@@ -115,20 +105,34 @@ public class MainLayout extends AppLayout {
         addToDrawer(scroller);
     }
 
-    private SideNav createTemplatesNavigation() {
+    private Layout createTemplatesNavigation() {
+        Layout navWrapper = new Layout();
+        navWrapper.setFlexDirection(Layout.FlexDirection.COLUMN);
+        navWrapper.setSizeUndefined();
+
         SideNav nav = new SideNav();
+        nav.setWidthFull();
         nav.addItem(new SideNavItem("Главная", MainProductView.class, LineAwesomeIcon.COOKIE_BITE_SOLID.create()));
-        nav.addItem(new SideNavItem("Карзина", ShoppingCartView.class, LineAwesomeIcon.SHOPPING_CART_SOLID.create()));
+        nav.addItem(new SideNavItem("Корзина", ShoppingCartView.class, LineAwesomeIcon.SHOPPING_CART_SOLID.create()));
         nav.addItem(new SideNavItem("Оплата", CheckoutView.class, LineAwesomeIcon.CREDIT_CARD.create()));
+        navWrapper.add(nav);
         if(userDetails!=null)nav.addItem(new SideNavItem("Профиль", ProfileView.class, LineAwesomeIcon.USER.create()));
         if(userDetails!=null && Objects.equals(userDetails.getRole(), Roles.ADMIN)){
-            nav.addItem(new SideNavItem("Таблица товара", AdminPanelProductGrid.class, LineAwesomeIcon.DATABASE_SOLID.create()));
-            nav.addItem(new SideNavItem("Таблица добавок", AdminPanelProductsOptionsGrid.class, LineAwesomeIcon.COFFEE_SOLID.create()));
-            nav.addItem(new SideNavItem("Таблица акций", AdminPanelPromotionGrid.class, LineAwesomeIcon.FILE_ALT.create()));
-            nav.addItem(new SideNavItem("Таблица филиалов", AdminPanelBranchGrid.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
-            nav.addItem(new SideNavItem("чат", Chat.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
+            SideNav adminNav = new SideNav();
+            adminNav.setLabel("Администратор");
+            adminNav.setWidthFull();
+            adminNav.setCollapsible(true);
+            adminNav.addItem(new SideNavItem("Таблица товара", AdminPanelProductGrid.class, LineAwesomeIcon.DATABASE_SOLID.create()));
+            adminNav.addItem(new SideNavItem("Таблица добавок", AdminPanelProductsOptionsGrid.class, LineAwesomeIcon.COFFEE_SOLID.create()));
+            adminNav.addItem(new SideNavItem("Таблица акций", AdminPanelPromotionGrid.class, LineAwesomeIcon.FILE_ALT.create()));
+            adminNav.addItem(new SideNavItem("Таблица филиалов", AdminPanelBranchGrid.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
+            adminNav.addItem(new SideNavItem("Таблица отзывов", AdminPanelReviewsGrid.class, LineAwesomeIcon.COMMENT_ALT.create()));
+            adminNav.addItem(new SideNavItem("Отчеты", AdminPanelPDFReport.class, LineAwesomeIcon.FILE_PDF.create()));
+            navWrapper.add(adminNav);
+//            nav.addItem(new SideNavItem("чат", Chat.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
         }
-        return nav;
+
+        return navWrapper;
     }
 
     @Override

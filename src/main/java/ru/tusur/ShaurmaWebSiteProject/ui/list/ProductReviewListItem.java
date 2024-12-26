@@ -57,6 +57,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         head.setAlignItems(Layout.AlignItems.STRETCH);
         head.setAlignItems(Layout.AlignItems.CENTER);
         head.add(userNameStars, createTimeStampAndModOptions());
+        head.getStyle().set("width", "-webkit-fill-available");
 
         Layout secondary = new Layout();
         secondary.setFlexDirection(Layout.FlexDirection.ROW);
@@ -70,7 +71,9 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         mainLayout.setAlignItems(Layout.AlignItems.START);
         mainLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
         mainLayout.addClassNames(LumoUtility.Margin.Top.LARGE, LumoUtility.AlignSelf.STRETCH);
-        mainLayout.add(new HorizontalLayout(createAvatar(), head), secondary);
+        HorizontalLayout horizontalLayout = new HorizontalLayout(createAvatar(), head);
+        horizontalLayout.getStyle().set("width", "-webkit-fill-available");
+        mainLayout.add(horizontalLayout, secondary);
 
         this.getStyle().set("list-style-type", "none");
         this.add(mainLayout);
@@ -114,7 +117,7 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         Avatar avatar = new Avatar(userDetailsFromReview.getAvatarUrl());
         avatar.addThemeVariants(AvatarVariant.LUMO_LARGE);
         if (userDetails != null) {
-            avatar.setImageResource(ImageResourceUtils.getImageResource(userDetails.getAvatarUrl()));
+            avatar.setImageResource(ImageResourceUtils.getImageResource(userDetailsFromReview.getAvatarUrl()));
         }
         return avatar;
     }
@@ -125,20 +128,22 @@ public class ProductReviewListItem extends com.vaadin.flow.component.html.ListIt
         AtomicReference<Integer> rate = new AtomicReference<>(0);
         allLikes.forEach(value -> rate.getAndUpdate(integer -> integer + value.getLikes().getAnInt()));
         boolean likeStateBoolean = likeOfUser.get().map(likes -> likes.getLikes() != LikeState.LIKE).orElse(true);
-        LikeState likeState = likeOfUser.get().map(Likes::getLikes).orElseThrow();
+        LikeState likeState = likeOfUser.get().map(Likes::getLikes).orElse(null);
 
         Button rateUp = new Button();
         Span counter = new Span(String.valueOf(rate.get()));
         Button rateDown = new Button();
         Layout counterIndicator = new Layout();
         Icon indicator = new Icon();
-        if (!likeStateBoolean && likeState.equals(LikeState.LIKE)) {
+        if (likeState == null){
+            indicator.setVisible(false);
+        } else if (!likeStateBoolean && likeState.equals(LikeState.LIKE)) {
             indicator.setIcon(VaadinIcon.ARROW_UP);
             indicator.setColor("green");
         } else if (likeStateBoolean && likeState.equals(LikeState.DISLIKE)) {
             indicator.setIcon(VaadinIcon.ARROW_DOWN);
             indicator.setColor("red");
-        } else indicator.setVisible(false);
+        }
 
         counterIndicator.setFlexDirection(Layout.FlexDirection.ROW);
         counterIndicator.setAlignItems(Layout.AlignItems.CENTER);

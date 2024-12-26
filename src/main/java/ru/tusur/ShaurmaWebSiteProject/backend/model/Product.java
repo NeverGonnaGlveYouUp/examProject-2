@@ -2,8 +2,10 @@ package ru.tusur.ShaurmaWebSiteProject.backend.model;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -38,9 +40,11 @@ public class Product {
     @JoinColumn(name = "type_id", nullable = false)
     private ProductTypeEntity productType;
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     private Set<Review> reviews;
 
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @ManyToMany(mappedBy = "productSet", fetch = FetchType.EAGER)
     private Set<ProductOption> productOptions;
 
@@ -66,6 +70,9 @@ public class Product {
         Product product = (Product) o;
         return id.equals(product.id);
     }
+
+    @Transient
+    Integer num = 0;
 
     @Override
     public int hashCode() {

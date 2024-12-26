@@ -13,5 +13,10 @@ public enum PromotionType {
     FREE_DELIVERY("Бесплатная доставка");
 
     private final String description;
+
+    @Override
+    public String toString() {
+        return description;
+    }
 }
 

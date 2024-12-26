@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Setter
@@ -20,7 +23,6 @@ public class Order {
     private Long id;
 
     @ManyToOne
-    @NotNull
     @JoinColumn(name="user_details_id")
     private UserDetails userDetails;
 
@@ -31,18 +33,29 @@ public class Order {
     @JoinColumn(name = "payment_id", referencedColumnName = "id")
     private Payment payment;
 
-    @ManyToOne
-    @JoinColumn(name="promotion_id")
-    private Promotion promotion;
+    @ManyToMany
+//    @JoinColumn(name="promotion_id")
+    private Set<Promotion> promotions = new HashSet<>();
 
     private BigDecimal sum;
+
+    private BigDecimal deliverySum;
 
     private String targetAddress;
 
     private Integer massSum = 0;
 
+    private Date orderCreationDate;
+
+    private Date orderStateDate;
+
+    private boolean featured = false;
+
     @Enumerated(EnumType.STRING)
     private OrderState orderState;
+
+    @Enumerated(EnumType.STRING)
+    private DeliveryType deliveryType;
 }
 
 

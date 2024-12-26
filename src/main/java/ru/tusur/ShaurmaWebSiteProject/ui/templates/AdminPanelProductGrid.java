@@ -104,7 +104,7 @@ public class AdminPanelProductGrid extends Main {
         productGrid.addColumn(
                 new ComponentRenderer<>(MenuBar::new, (menuBar, product) -> {
                     menuBar.addThemeVariants(MenuBarVariant.LUMO_ICON);
-                    createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.SHARE_SQUARE.getSvgName() + ".svg", "Перейти на страницу", _ -> UI.getCurrent().navigate(ProductDetailsView.class, product.getName()), null);
+                    createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.SHARE_SQUARE.getSvgName() + ".svg", "Перейти на страницу", _ -> UI.getCurrent().navigate(ProductDetailsView.class, product.getName()+"&"+"Вершинина, 38"), null);
                     MenuItem deleateMenuItem = createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.TRASH_ALT.getSvgName() + ".svg", "Удалить", _ -> removeProductDialog(product), null);
                     deleateMenuItem.addThemeNames("error");
                 })).setHeader("Управление");
@@ -154,7 +154,7 @@ public class AdminPanelProductGrid extends Main {
         menuBar.addThemeVariants(MenuBarVariant.LUMO_ICON);
         menuBar.getStyle().setPaddingTop("35px");
         createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.PLUS_CIRCLE_SOLID.getSvgName() + ".svg", "Создать новый тип продукта", _ -> openCreateProductTypeEntityDialog(), "Тип");
-        createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.TRASH_ALT.getSvgName() + ".svg", "Удалить этот тип продукта", _ -> removeProductTypeDialog(), "Тип");
+        createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.TRASH_ALT.getSvgName() + ".svg", "Удалить этот тип продукта", _ -> removeProductTypeDialog(), "Удалить тип");
         createMenuItem(menuBar, "line-awesome/svg/" + LineAwesomeIcon.PLUS_SOLID.getSvgName() + ".svg", "Создать новый объект продукта", _ -> {
             if (productInEditing == null) {
                 productInEditing = new Product();

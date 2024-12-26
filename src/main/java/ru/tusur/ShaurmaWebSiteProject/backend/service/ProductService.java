@@ -41,6 +41,7 @@ public class ProductService {
             @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
     })
     public void delete(Product product) {
+        branchProductRepo.deleteAllByProduct(product);
         productRepo.delete(product);
     }
 

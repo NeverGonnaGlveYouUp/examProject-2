@@ -6,10 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Branch;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.BranchProduct;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.BranchProductKey;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,9 +20,16 @@ public interface BranchProductRepo extends JpaRepository<BranchProduct, Long> {
 
     BranchProduct findById(BranchProductKey branchProductKey);
 
-    List<Product> findAllProductByBranch(Branch branch);
+    List<BranchProduct> findAllProductByBranch(Branch branch);
+    List<BranchProduct> findAllProductByBranchAndHide(Branch branch, boolean b);
+
+    List<BranchProduct> findAllByProductIn(List<Product> products);
 
     List<BranchProduct> findAllByBranch(Branch branch);
+
+    @Modifying
+    @Transactional
+    void deleteAllByProduct(Product product);
 
     @Modifying
     @Transactional

@@ -28,6 +28,7 @@ import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 public class OrderHistoryListItem extends com.vaadin.flow.component.html.ListItem {
 

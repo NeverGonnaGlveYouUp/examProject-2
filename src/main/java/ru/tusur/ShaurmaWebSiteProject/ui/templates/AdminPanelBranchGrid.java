@@ -74,7 +74,7 @@ public class AdminPanelBranchGrid extends Main {
     private final List<Branch> branches = new ArrayList<>();
     private final Div hint = new Div();
     private BranchProduct branchProductInEditing;
-    private Layout imageLayout;
+//    private Layout imageLayout;
     private Section sidebar;
     private Branch currentBranch;
     private boolean changeBranchFlag = false;
@@ -407,19 +407,20 @@ public class AdminPanelBranchGrid extends Main {
             promotionService.createBranchAddressMap();
         });
 
-        imageLayout = new Layout(getImage(currentBranch));
-        imageLayout.setWidth("70%");
-        imageLayout.addClassName(LumoUtility.AlignSelf.CENTER);
-        imageLayout.addClickListener(event -> {
-            if (currentBranch != null) attachUploadDialog(imageLayout, currentBranch);
-        });
+//        imageLayout = new Layout(getImage(currentBranch));
+//        imageLayout.setWidth("70%");
+//        imageLayout.addClassName(LumoUtility.AlignSelf.CENTER);
+//        imageLayout.addClickListener(event -> {
+//            if (currentBranch != null) attachUploadDialog(imageLayout, currentBranch);
+//        });
 
         Layout timeLayout = new Layout(openFromTimePicker, openTillTimePicker);
         timeLayout.setGap(Layout.Gap.MEDIUM);
         timeLayout.getStyle().set("display", "contents");
         timeLayout.setFlexDirection(Layout.FlexDirection.ROW);
 
-        Layout form = new Layout(imageLayout, addressField, productSelect, phoneField, timeLayout, deliveryStreetsField, hideBranchCheckbox, updateProductButton);
+//        Layout form = new Layout(imageLayout, addressField, productSelect, phoneField, timeLayout, deliveryStreetsField, hideBranchCheckbox, updateProductButton);
+        Layout form = new Layout(addressField, productSelect, phoneField, timeLayout, deliveryStreetsField, hideBranchCheckbox, updateProductButton);
         form.addClassNames(LumoUtility.Padding.Horizontal.LARGE);
         form.setFlexDirection(Layout.FlexDirection.COLUMN);
 
@@ -445,8 +446,8 @@ public class AdminPanelBranchGrid extends Main {
             openFromTimePicker.setValue(LocalTime.ofInstant(currentBranch.getOpenFrom().toInstant(), ZoneId.systemDefault()));
             openTillTimePicker.setValue(LocalTime.ofInstant(currentBranch.getOpenTill().toInstant(), ZoneId.systemDefault()));
             deliveryStreetsField.setValue(currentBranch.getDeliveryStreets());
-            imageLayout.removeAll();
-            imageLayout.add(getImage(currentBranch));
+//            imageLayout.removeAll();
+//            imageLayout.add(getImage(currentBranch));
         });
         this.sidebar = new Section(header, form);
         this.sidebar.addClassNames("backdrop-blur-sm", "bg-tint-90", LumoUtility.Border.RIGHT,
@@ -456,20 +457,20 @@ public class AdminPanelBranchGrid extends Main {
         return this.sidebar;
     }
 
-    private Image getImage(Branch branch) {
-        Image image;
-        if (branch != null && branch.getDeliveryZoneUrl() == null) {
-            image = new Image("line-awesome/svg/" + LineAwesomeIcon.FILE_IMAGE.getSvgName() + ".svg", "");
-            image.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignContent.CENTER);
-        } else if (branch != null) {
-            image = new Image(ImageResourceUtils.getImageResource(branch.getDeliveryZoneUrl()), branch.getAddress());
-        } else {
-            image = new Image("line-awesome/svg/" + LineAwesomeIcon.FILE_IMAGE.getSvgName() + ".svg", "");
-            image.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignContent.CENTER);
-        }
-        image.getStyle().set("min-width", "-webkit-fill-available");
-        return image;
-    }
+//    private Image getImage(Branch branch) {
+//        Image image;
+//        if (branch != null) {
+//            image = new Image("line-awesome/svg/" + LineAwesomeIcon.FILE_IMAGE.getSvgName() + ".svg", "");
+//            image.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignContent.CENTER);
+//        } else if (branch != null) {
+//            image = new Image(ImageResourceUtils.getImageResource(branch.getDeliveryZoneUrl()), branch.getAddress());
+//        } else {
+//            image = new Image("line-awesome/svg/" + LineAwesomeIcon.FILE_IMAGE.getSvgName() + ".svg", "");
+//            image.addClassNames(LumoUtility.JustifyContent.CENTER, LumoUtility.AlignContent.CENTER);
+//        }
+//        image.getStyle().set("min-width", "-webkit-fill-available");
+//        return image;
+//    }
 
     private void attachUploadDialog(Layout imageLayout, Branch branch) {
         Dialog dialog = new Dialog();
@@ -488,7 +489,7 @@ public class AdminPanelBranchGrid extends Main {
 
             StreamResource imageResource = new StreamResource(fileName, (InputStreamFactory) () -> inputStream);
 
-            branch.setDeliveryZoneUrl("src/main/resources/META-INF/resources/images/" + fileName);
+//            branch.setDeliveryZoneUrl("src/main/resources/META-INF/resources/images/" + fileName);
             imageLayout.removeAll();
             Image myStreamedImage = new Image(imageResource, "My Streamed Image");
             myStreamedImage.getStyle().set("min-width", "-webkit-fill-available");

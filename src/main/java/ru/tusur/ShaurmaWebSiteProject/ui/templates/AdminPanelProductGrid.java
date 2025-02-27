@@ -13,6 +13,7 @@ import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.SvgIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextArea;
@@ -27,10 +28,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 import jakarta.annotation.security.RolesAllowed;
 import org.vaadin.lineawesome.LineAwesomeIcon;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductOption;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
-import ru.tusur.ShaurmaWebSiteProject.backend.model.Review;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductContentsRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductOptionRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
@@ -60,6 +59,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class AdminPanelProductGrid extends Main {
 
     public static final String name = "Товары";
+    private final ProductContentsRepo productContentsRepo;
     private final ProductService productService;
     private final ProductTypeEntityRepo productTypeEntityRepo;
     private final ProductRepo productRepo;
@@ -67,15 +67,19 @@ public class AdminPanelProductGrid extends Main {
     private final Grid<Product> productGrid = new Grid<>(Product.class, false);
     private final ComboBox<ProductTypeEntity> productTypeEntityComboBox = new ComboBox<>();
     private final List<Product> products = new ArrayList<>();
+    private List<ProductContent> productContents = new ArrayList<>();
     private final List<ProductTypeEntity> productTypeEntities = new ArrayList<>();
     private final Div hint = new Div();
+    private final Layout productComponentsLayout = new Layout();
+    private final Layout componentsLayout = new Layout();
     private Product productInEditing;
     private Layout imageLayout;
     private Section sidebar;
     private ProductTypeEntity currentProductType;
 
 
-    public AdminPanelProductGrid(ProductService productService, ProductTypeEntityRepo productTypeEntityRepo, ProductRepo productRepo, ProductOptionRepo productOptionRepo) {
+    public AdminPanelProductGrid(ProductContentsRepo productContentsRepo, ProductService productService, ProductTypeEntityRepo productTypeEntityRepo, ProductRepo productRepo, ProductOptionRepo productOptionRepo) {
+        this.productContentsRepo = productContentsRepo;
         this.productService = productService;
         this.productTypeEntityRepo = productTypeEntityRepo;
         this.productRepo = productRepo;
@@ -86,11 +90,14 @@ public class AdminPanelProductGrid extends Main {
         products.addAll(productService.findByProductTypeOrderByRankAsc(currentProductType));
         productInEditing = products.stream().filter(product -> product.getName().equals("Н/д")).findFirst().orElse(null);
         createGrid();
-        addClassNames(LumoUtility.Display.FLEX, LumoUtility.Height.FULL, LumoUtility.Overflow.HIDDEN, Layout.FlexDirection.ROW.getClassName());
+        getStyle().set("overflow", "visible");
+        addClassNames(LumoUtility.Display.FLEX, LumoUtility.Height.FULL, Layout.FlexDirection.ROW.getClassName());
         Layout layout = new Layout(createHat(), productGrid, hint);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
         layout.getStyle().setWidth("-webkit-fill-available");
-        add(createSidebar(), layout);
+        Scroller scroller = new Scroller(createSidebar());
+        scroller.setScrollDirection(Scroller.ScrollDirection.VERTICAL);
+        add(scroller, layout);
         closeSidebar();
     }
 
@@ -232,6 +239,7 @@ public class AdminPanelProductGrid extends Main {
 
         Button confirmButton = new Button("Удалить", event -> {
             productTypeEntities.remove(currentProductType);
+            productTypeEntityRepo.delete(currentProductType);
             currentProductType = productTypeEntities.stream().findFirst().orElse(null);
             products.forEach(productService::delete);
             products.clear();
@@ -329,6 +337,7 @@ public class AdminPanelProductGrid extends Main {
         header.addClassNames(LumoUtility.Padding.End.MEDIUM, LumoUtility.Padding.Start.LARGE, LumoUtility.Padding.Vertical.SMALL);
         header.setAlignItems(Layout.AlignItems.CENTER);
         header.setJustifyContent(Layout.JustifyContent.BETWEEN);
+        header.setWidth(18, Unit.REM);
 
         TextField nameField = new TextField();
         nameField.setLabel("Название");
@@ -360,6 +369,8 @@ public class AdminPanelProductGrid extends Main {
         productOptionMultiSelectComboBox.setItems(productOptions);
         productOptionMultiSelectComboBox.setAutoExpand(MultiSelectComboBox.AutoExpandMode.HORIZONTAL);
 
+        fillProductsComponentLayout();
+
         Button updateProductButton = new Button("Сохранить");
         updateProductButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         updateProductButton.addClickListener(_ -> {
@@ -372,13 +383,16 @@ public class AdminPanelProductGrid extends Main {
                 o.setMass(massField.getValue());
                 o.setPrice(priceField.getValue());
                 o.setDescription(descriptionField.getValue());
-                o.getProductOptions().removeAll(productOptionMultiSelectComboBox.getSelectedItems());
+                Set<ProductOption> productOptions1 = new HashSet<>(o.getProductOptions());
+                productOptions1.removeAll(productOptionMultiSelectComboBox.getSelectedItems());
+                o.setProductOptions(productOptions1);
                 o.getProductOptions().forEach(productOption -> productOption.getProductSet().remove(o));
                 productOptionRepo.saveAll(o.getProductOptions());
                 o.setProductOptions(productOptionMultiSelectComboBox.getSelectedItems());
                 o.getProductOptions().forEach(productOption -> productOption.getProductSet().add(o));
                 productOptionRepo.saveAll(o.getProductOptions());
                 products.add(o);
+                o.setContents(productContents);
                 productService.update(o);
                 productGrid.getDataProvider().refreshItem(o);
             } else {
@@ -398,9 +412,10 @@ public class AdminPanelProductGrid extends Main {
             if (product.get() != null) attachUploadDialog(imageLayout, product.get());
         });
 
-        Layout form = new Layout(imageLayout, nameField, priceField, massField, descriptionField, productOptionMultiSelectComboBox, updateProductButton);
+        Layout form = new Layout(imageLayout, nameField, priceField, massField, descriptionField, productOptionMultiSelectComboBox, productComponentsLayout, updateProductButton);
         form.addClassNames(LumoUtility.Padding.Horizontal.LARGE);
         form.setFlexDirection(Layout.FlexDirection.COLUMN);
+        form.setWidth(18, Unit.REM);
         productGrid.addItemDoubleClickListener(event -> openSidebar());
         productGrid.addSelectionListener(event -> {
             if (event.getFirstSelectedItem().isPresent()) product.set(event.getFirstSelectedItem().get());
@@ -412,6 +427,9 @@ public class AdminPanelProductGrid extends Main {
             descriptionField.setValue(product.get().getDescription());
             imageLayout.removeAll();
             imageLayout.add(getImage(product.get()));
+            productContents.clear();
+            productContents.addAll(productContentsRepo.findAllByProduct(product.get()));
+            createContentList(productContents);
         });
         this.sidebar = new Section(header, form);
         this.sidebar.addClassNames("backdrop-blur-sm", "bg-tint-90", LumoUtility.Border.RIGHT,
@@ -473,5 +491,58 @@ public class AdminPanelProductGrid extends Main {
         dialog.add(verticalLayout1);
         dialog.open();
     }
+
+    private void fillProductsComponentLayout(){
+        TextField name = new TextField();
+        name.setLabel("Название состава");
+        name.setPlaceholder("Элемент состава");
+
+        IntegerField mass = new IntegerField();
+        mass.setLabel("Масса элемента");
+        mass.setPlaceholder("Масса элемента");
+
+        Button save = new Button("Добавить");
+        save.addClickListener(event -> {
+            ProductContent productContent = new ProductContent();
+            productContent.setMass(mass.getValue());
+            productContent.setName(name.getValue());
+            productContents.add(productContent);
+            createContentList(productContents);
+        });
+
+        Layout inputLayout = new Layout(name, mass, save);
+        inputLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
+        inputLayout.setGap(Layout.Gap.SMALL);
+
+        productComponentsLayout.add(inputLayout);
+        productComponentsLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
+        productComponentsLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
+        componentsLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
+        componentsLayout.setGap(Layout.Gap.SMALL);
+    }
+
+    private void createContentList(List<ProductContent> productContents){
+        UI.getCurrent().access(() -> productComponentsLayout.remove(componentsLayout));
+        componentsLayout.removeAll();
+        productContents.forEach(productContent -> {
+            Span nameSpan = new Span(productContent.getName());
+            Span massSpan = new Span(STR."\{String.valueOf(productContent.getMass())} г");
+            massSpan.getStyle().set("box-sizing", "content-box").set("position", "absolute").set("margin-left", "10rem");
+            SvgIcon icon = LineAwesomeIcon.TRASH_ALT.create();
+            icon.getStyle().set("box-sizing", "content-box").set("position", "absolute").set("margin-left", "16rem");
+            Layout layout = new Layout(nameSpan, massSpan, icon);
+            layout.setFlexDirection(Layout.FlexDirection.ROW);
+            layout.setJustifyContent(Layout.JustifyContent.BETWEEN);
+            icon.addClickListener(event -> {
+                UI.getCurrent().access(() -> componentsLayout.remove(layout));
+                productContents.remove(productContent);
+                if (productContent.getId()!=null)
+                    productContentsRepo.delete(productContent);
+            });
+            componentsLayout.add(layout);
+        });
+        UI.getCurrent().access(() -> productComponentsLayout.add(componentsLayout));
+    }
+
 }
 

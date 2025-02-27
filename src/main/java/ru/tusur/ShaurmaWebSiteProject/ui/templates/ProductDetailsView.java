@@ -8,6 +8,8 @@ import com.vaadin.flow.component.avatar.AvatarVariant;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.CheckboxGroup;
+import com.vaadin.flow.component.details.Details;
+import com.vaadin.flow.component.details.DetailsVariant;
 import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -17,6 +19,7 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.theme.lumo.LumoUtility;
 import com.vaadin.flow.theme.lumo.LumoUtility.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.*;
@@ -36,7 +39,9 @@ import ru.tusur.ShaurmaWebSiteProject.ui.utils.Pair;
 import ru.tusur.ShaurmaWebSiteProject.ui.utils.StarsUtils;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -115,8 +120,33 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
         Span price = new Span(product.getPrice() + " ₽");
         price.addClassNames(FontWeight.BOLD, Margin.Bottom.XSMALL, Margin.Top.NONE);
 
+        Span mass = new Span(product.getMass() + " г");
+        mass.addClassNames(FontWeight.BOLD, Margin.Bottom.XSMALL, Margin.Top.NONE);
+
+        Layout layout1 = new Layout(price, mass);
+        layout1.setGap(Layout.Gap.LARGE);
+        layout1.setFlexDirection(Layout.FlexDirection.ROW);
+
         Paragraph description = new Paragraph(product.getDescription());
         description.addClassNames(Margin.Bottom.LARGE, Margin.Top.MEDIUM);
+
+        Layout contentLayout = new Layout();
+        contentLayout.setGap(Layout.Gap.SMALL);
+        contentLayout.setFlexDirection(Layout.FlexDirection.COLUMN);
+        product.getContents().forEach(productContent -> {
+            Layout layout = new Layout();
+            layout.setJustifyContent(Layout.JustifyContent.BETWEEN);
+
+            Span span = new Span(productContent.getName());
+            Span span1 = new Span(productContent.getMass() + " г");
+
+            layout.add(span, span1);
+            contentLayout.add(layout);
+        });
+
+        Details productContentDetails = new Details("Состав", contentLayout);
+        productContentDetails.addClassNames(LumoUtility.Border.TOP, LumoUtility.Margin.Vertical.NONE, LumoUtility.Padding.Vertical.MEDIUM);
+        productContentDetails.addThemeVariants(DetailsVariant.REVERSE);
 
         Set<ProductOption> productOptions = product.getProductOptions();
         String[] labels = productOptions.stream().map(ProductOption::getName).toArray(String[]::new);
@@ -229,7 +259,7 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
             else reviews.add(new BlockedReviewListItem(reviewObj.getReason()));
         });
 
-        Layout layout = new Layout(breadcrumb, title, price, reviewLayout, description, quantityLayout, options, reviews);
+        Layout layout = new Layout(breadcrumb, title, layout1, reviewLayout, description, productContentDetails, quantityLayout, options, reviews);
         layout.addClassNames(BoxSizing.BORDER, MaxWidth.SCREEN_SMALL, Padding.LARGE);
         layout.setBoxSizing(Layout.BoxSizing.BORDER);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
@@ -250,6 +280,7 @@ public class ProductDetailsView extends Main implements HasUrlParameter<String>,
             this.branchAddress = parameter.split("&")[1];
         } catch (IndexOutOfBoundsException _){ }
         this.product = productRepo.findByName(productName).orElseThrow(NotFoundException::new);
+        product.setReviews(new HashSet<>(reviewRepo.findAllByProductAndBranch(product, branchRepo.findAllByAddress(branchAddress).get())));
         add(createInformation(), createImage());
     }
 

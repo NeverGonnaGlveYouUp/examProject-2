@@ -80,7 +80,7 @@ public class AdminPanelPromotionGrid extends Main {
                         promotion.setHide(checkbox.getValue());
                         promotionRepo.save(promotion);
                     });
-                })).setHeader("Активно");
+                })).setHeader("Скрыто");
         promotionGrid.addColumn(
                 new ComponentRenderer<>(MenuBar::new, (menuBar, promotion) -> {
                     menuBar.addThemeVariants(MenuBarVariant.LUMO_ICON);
@@ -263,7 +263,7 @@ public class AdminPanelPromotionGrid extends Main {
         effectField.setHelperText("Если это константная скидка, то эффект должен быть меньше нуля.");
 
         Select<PromotionType> promotionTypeSelect = new Select<>();
-        promotionTypeSelect.setLabel("Товар");
+        promotionTypeSelect.setLabel("Тип акции");
         promotionTypeSelect.setPlaceholder("Тип акции");
         promotionTypeSelect.setItems(PromotionType.values());
         promotionTypeSelect.setValue(promotionInEditing == null ? null : promotionInEditing.getPromotionType());

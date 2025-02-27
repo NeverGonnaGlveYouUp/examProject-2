@@ -2,14 +2,15 @@ package ru.tusur.ShaurmaWebSiteProject.backend.model;
 
 
 import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.Cascade;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -51,11 +52,9 @@ public class Product {
     @OneToMany(mappedBy = "product", fetch = FetchType.EAGER)
     private Set<OrderContent> orderContents;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @JoinTable(name = "content_map", joinColumns = @JoinColumn(name = "product_id", referencedColumnName = "id"))
-    @MapKeyColumn(name = "content_name")
-    @Column(name = "content_mass")
-    private Map<String, Integer> contentMap = new HashMap<>();
+    @OneToMany(mappedBy = "product")
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private List<ProductContent> contents;
 
     @Override
     public String toString() {

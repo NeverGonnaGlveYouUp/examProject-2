@@ -18,6 +18,7 @@ import ru.tusur.ShaurmaWebSiteProject.backend.model.*;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchProductRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductTypeEntityRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.ReviewRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ProductService;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Badge;
 import ru.tusur.ShaurmaWebSiteProject.ui.components.Layout;
@@ -39,6 +40,7 @@ import java.util.stream.Collectors;
 @PageTitle("PitaMaster")
 public class MainProductView extends Main implements LazyPlaceholder {
     private final BranchProductRepo branchProductRepo;
+    private final ReviewRepo reviewRepo;
     private final Random random = new Random();
     private final List<Product> products = new ArrayList<>();
     private final List<Branch> branches = new ArrayList<>();
@@ -51,9 +53,10 @@ public class MainProductView extends Main implements LazyPlaceholder {
 //    private com.vaadin.flow.component.html.Section sidebar;
 
     public MainProductView(BranchProductRepo branchProductRepo,
-                           BranchRepo branchRepo) {
+                           BranchRepo branchRepo,
+                           ReviewRepo reviewRepo) {
         this.branchProductRepo = branchProductRepo;
-
+        this.reviewRepo = reviewRepo;
         branches.addAll(branchRepo.findAllByHide(false));
         currentBranch = branches.getFirst();
         products.addAll(branchProductRepo.findAllProductByBranchAndHide(currentBranch, false).stream().map(BranchProduct::getProduct).toList());
@@ -239,7 +242,7 @@ public class MainProductView extends Main implements LazyPlaceholder {
             for (Product product : productsOfProductType) {
 
                 DecimalFormat df = new DecimalFormat("#.##");
-                double ratingValue = product.getReviews().stream().mapToInt(Review::getGrade).sum() / (double) product.getReviews().size();
+                double ratingValue = reviewRepo.findAllByProductAndBranch(product, currentBranch).stream().mapToInt(Review::getGrade).sum() / (double) product.getReviews().size();
                 Span span = new Span();
                 span.addClassNames(LumoUtility.AlignItems.CENTER, LumoUtility.Display.FLEX, LumoUtility.Gap.SMALL);
                 span.getElement().setAttribute("aria-hidden", "true");

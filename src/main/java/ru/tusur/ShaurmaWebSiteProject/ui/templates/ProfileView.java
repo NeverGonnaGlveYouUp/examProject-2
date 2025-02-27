@@ -32,6 +32,7 @@ import ru.tusur.ShaurmaWebSiteProject.backend.repo.OrderContentRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.OrderContentToProductOptionRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.OrderRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.UserDetailsRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.security.DelegatingPasswordEncoder;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.Roles;
 import ru.tusur.ShaurmaWebSiteProject.backend.security.SecurityService;
 import ru.tusur.ShaurmaWebSiteProject.backend.service.ShopCartService;
@@ -58,6 +59,7 @@ import java.util.stream.Collectors;
 @Route(value = "Профиль", layout = MainLayout.class)
 public class ProfileView extends Main {
     private final SecurityService securityService;
+    private final DelegatingPasswordEncoder delegatingPasswordEncoder;
     private final ShopCartService shopCartService;
     private final OrderContentToProductOptionRepo orderContentToProductOptionRepo;
     private UserDetails userDetails;
@@ -66,7 +68,8 @@ public class ProfileView extends Main {
     private final OrderContentRepo orderContentRepo;
     private final TabSheet tabSheet = new TabSheet();
 
-    public ProfileView(SecurityService securityService, UserDetailsRepo userDetailsRepo, OrderRepo orderRepo, OrderContentRepo orderContentRepo, ShopCartService shopCartService, OrderContentToProductOptionRepo orderContentToProductOptionRepo) {
+    public ProfileView(DelegatingPasswordEncoder delegatingPasswordEncoder, SecurityService securityService, UserDetailsRepo userDetailsRepo, OrderRepo orderRepo, OrderContentRepo orderContentRepo, ShopCartService shopCartService, OrderContentToProductOptionRepo orderContentToProductOptionRepo) {
+        this.delegatingPasswordEncoder = delegatingPasswordEncoder;
         this.shopCartService = shopCartService;
         this.orderContentToProductOptionRepo = orderContentToProductOptionRepo;
         addClassNames(BoxSizing.BORDER, Display.FLEX, FlexDirection.COLUMN, FlexDirection.Breakpoint.Medium.ROW, Margin.Horizontal.AUTO, MaxWidth.SCREEN_LARGE);
@@ -219,7 +222,18 @@ public class ProfileView extends Main {
         TextField newPassword = new TextField("Новый пароль");
         TextField confirmPassword = new TextField("Подтвердите пароль");
 
-        Layout layout = new Layout(title, currentPassword, newPassword, confirmPassword);
+        Button button = new Button("Обновить пароль",event -> {
+            if (delegatingPasswordEncoder
+                    .passwordEncoder()
+                    .matches(currentPassword.getValue(), userDetails.getPassword()) &&
+                    Objects.equals(newPassword.getValue(), confirmPassword.getValue())){
+                    userDetails.setPassword(delegatingPasswordEncoder.passwordEncoder().encode(newPassword.getValue()));
+                    userDetails = userDetailsRepo.save(userDetails);
+            }
+        });
+        button.addClassNames(AlignItems.CENTER, Background.PRIMARY, BorderRadius.MEDIUM, Display.FLEX, Height.MEDIUM, JustifyContent.CENTER, TextColor.PRIMARY_CONTRAST);
+
+        Layout layout = new Layout(title, currentPassword, newPassword, confirmPassword, button);
         layout.setFlexDirection(Layout.FlexDirection.COLUMN);
         return layout;
     }

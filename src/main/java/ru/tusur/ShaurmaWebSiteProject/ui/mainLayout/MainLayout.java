@@ -61,6 +61,7 @@ public class MainLayout extends AppLayout {
         messageButton.setAriaLabel("View messages (4)");
         messageButton.setSuffixComponent(messageBadge);
         messageButton.setTooltipText("View messages (4)");
+        messageButton.setVisible(false);
 
         NotificationsDialog notificationsMenu = new NotificationsDialog();
 
@@ -74,6 +75,7 @@ public class MainLayout extends AppLayout {
         notificationsButton.setAriaLabel("View notifications (2)");
         notificationsButton.setSuffixComponent(notificationsBadge);
         notificationsButton.setTooltipText("View notifications (2)");
+        notificationsButton.setVisible(false);
 
 
         if (userDetails!=null){
@@ -83,12 +85,14 @@ public class MainLayout extends AppLayout {
             avatar.addClassNames(LumoUtility.Margin.Horizontal.SMALL);
             avatar.getElement().addEventListener("click", e -> userMenu.showModal());
             avatar.setTooltipEnabled(true);
+            avatar.getStyle().set("margin-inline-start", "auto");
             addToNavbar(true, toggle, viewTitle, messageButton, messagesMenu, notificationsButton,
                     notificationsMenu, avatar, userMenu);
         } else {
             Item item = new Item("Войти", LineAwesomeIcon.SIGN_IN_ALT_SOLID);
             item.addClassNames(LumoUtility.LineHeight.XSMALL, LumoUtility.Padding.SMALL, "hover:bg-contrast-5");
             item.addClickListener(event -> UI.getCurrent().navigate(LoginView.class));
+            item.getStyle().set("margin-inline-start", "auto");
             addToNavbar(true, toggle, viewTitle, messageButton, messagesMenu, notificationsButton,
                     notificationsMenu, item);
         }
@@ -127,7 +131,7 @@ public class MainLayout extends AppLayout {
             adminNav.addItem(new SideNavItem("Таблица акций", AdminPanelPromotionGrid.class, LineAwesomeIcon.FILE_ALT.create()));
             adminNav.addItem(new SideNavItem("Таблица филиалов", AdminPanelBranchGrid.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
             adminNav.addItem(new SideNavItem("Таблица отзывов", AdminPanelReviewsGrid.class, LineAwesomeIcon.COMMENT_ALT.create()));
-            adminNav.addItem(new SideNavItem("Отчеты", AdminPanelPDFReport.class, LineAwesomeIcon.FILE_PDF.create()));
+//            adminNav.addItem(new SideNavItem("Отчеты", AdminPanelPDFReport.class, LineAwesomeIcon.FILE_PDF.create()));
             navWrapper.add(adminNav);
 //            nav.addItem(new SideNavItem("чат", Chat.class, LineAwesomeIcon.CODE_BRANCH_SOLID.create()));
         }

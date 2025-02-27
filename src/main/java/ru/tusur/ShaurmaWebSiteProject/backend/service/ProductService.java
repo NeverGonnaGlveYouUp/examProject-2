@@ -7,8 +7,10 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import ru.tusur.ShaurmaWebSiteProject.backend.config.SimpleCacheCustomizer;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.Product;
+import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductContent;
 import ru.tusur.ShaurmaWebSiteProject.backend.model.ProductTypeEntity;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.BranchProductRepo;
+import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductContentsRepo;
 import ru.tusur.ShaurmaWebSiteProject.backend.repo.ProductRepo;
 
 import java.util.List;
@@ -23,6 +25,9 @@ public class ProductService {
     @Autowired
     private BranchProductRepo branchProductRepo;
 
+    @Autowired
+    private ProductContentsRepo productContentsRepo;
+
     @Cacheable(value = SimpleCacheCustomizer.PRODUCT, key = "#product.id")
     public Product add(Product product) {
         return productRepo.save(product);
@@ -33,6 +38,10 @@ public class ProductService {
             @CacheEvict(value = SimpleCacheCustomizer.PRODUCTS, allEntries = true)
     })
     public Product update(Product product) {
+        product.getContents().forEach(productContent -> {
+            productContent.setProduct(product);
+            productContentsRepo.save(productContent);
+        });
         return productRepo.save(product);
     }
 

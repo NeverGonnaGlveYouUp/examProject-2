@@ -77,7 +77,8 @@ public class UserDialog extends NativeDialog {
             component.getElement().getThemeList().add(RadioButtonTheme.TOGGLE);
         });
 
-        add(list, hr, colorScheme, density);
+//        add(list, hr, colorScheme, density);
+        add(list, hr, colorScheme);
     }
 
     private ListItem createListItem(String text, LineAwesomeIcon icon, Class<? extends Component> navigationTarget) {

@@ -170,9 +170,6 @@ public class PDFCreatorService {
                             table.addCell(new Paragraph(columnTitle, font));
                         });
 
-                var lambdaContext = new Object() {
-                    Integer num = 0;
-                };
                 var numFDContext = new Object() {
                     Integer numFD = 0;
                 };

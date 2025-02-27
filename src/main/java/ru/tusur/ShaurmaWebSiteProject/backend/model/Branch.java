@@ -29,7 +29,7 @@ public class Branch {
         if (o == null || getClass() != o.getClass()) return false;
 
         Branch branch = (Branch) o;
-        return id.equals(branch.id) && Objects.equals(address, branch.address) && Objects.equals(phoneNumber, branch.phoneNumber) && Objects.equals(deliveryZoneUrl, branch.deliveryZoneUrl) && Objects.equals(deliveryStreets, branch.deliveryStreets) && Objects.equals(openFrom, branch.openFrom) && Objects.equals(openTill, branch.openTill);
+        return id.equals(branch.id) && Objects.equals(address, branch.address) && Objects.equals(phoneNumber, branch.phoneNumber)  && Objects.equals(deliveryStreets, branch.deliveryStreets) && Objects.equals(openFrom, branch.openFrom) && Objects.equals(openTill, branch.openTill);
     }
 
     @Override
@@ -37,7 +37,6 @@ public class Branch {
         int result = id.hashCode();
         result = 31 * result + Objects.hashCode(address);
         result = 31 * result + Objects.hashCode(phoneNumber);
-        result = 31 * result + Objects.hashCode(deliveryZoneUrl);
         result = 31 * result + Objects.hashCode(deliveryStreets);
         result = 31 * result + Objects.hashCode(openFrom);
         result = 31 * result + Objects.hashCode(openTill);
@@ -50,7 +49,6 @@ public class Branch {
                 "address='" + address + '\'' +
                 ", id=" + id +
                 ", phoneNumber='" + phoneNumber + '\'' +
-                ", deliveryZoneUrl='" + deliveryZoneUrl + '\'' +
                 ", deliveryStreets='" + deliveryStreets + '\'' +
                 ", openFrom=" + openFrom +
                 ", openTill=" + openTill +
@@ -61,7 +59,6 @@ public class Branch {
 
     private String phoneNumber;
 
-    private String deliveryZoneUrl;
 
     private String deliveryStreets;
 

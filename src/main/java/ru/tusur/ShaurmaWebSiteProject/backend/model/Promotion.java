@@ -33,11 +33,5 @@ public class Promotion{
 
     private BigDecimal promotionEffect;
 
-//    private Product product;
-
-//    @ManyToMany(mappedBy = "promotion")
-    @ManyToMany
-    private Set<Order> orders;
-
     private boolean hide = false;
 }

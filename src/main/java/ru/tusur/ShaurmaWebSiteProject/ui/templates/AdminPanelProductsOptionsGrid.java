@@ -246,7 +246,7 @@ public class AdminPanelProductsOptionsGrid extends Main {
         massField.setPlaceholder("Масса в граммах");
         massField.setMin(1);
 
-        //todo this value can be negative, fix it
+        //todo this value can be negative, fix it some ady, maybe
         BigDecimalPriceField priceField = new BigDecimalPriceField();
         priceField.setWidth("auto");
         priceField.setLabel("Цена");
